@@ -23,7 +23,7 @@ Note: subfinder is a deep scanner, if you want a more discrete/faster scan use a
 
 ## Instructions
 
-### 🔧 Build the Docker Image
+### Build the Docker Image
 ```bash
 docker build -t reconbox .
 ```
