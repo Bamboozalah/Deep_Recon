@@ -1,5 +1,6 @@
 # Deep_Recon
 Deep_Recon is a Dockerized OSINT automation tool that is designed for lazy analysts who don't like switching tools but need insight into asset exposure, cloud misconfigurations, and supply chain visibility.
+---
 Note: subfinder is a deep scanner, if you want a more discrete/faster scan use assetfinder or leverage an external tool that can export results into a csv for Deep_Recon to process.
 
 
@@ -61,18 +62,6 @@ This will generate:
 
 > Screenshots should be named like `subdomain.example.com.png` and placed in the `screenshots/` directory.
 
----
-
-## What does it do? 
-
-- Integrated subdomain enumeration (subfinder or assetfinder)
-- Risk scoring, cloud/tech stack detection
-- Error page extraction
-- Pivot suggestion engine (GitHub dorks, S3 hunt, path fuzzing)
-- Full HTML report with:
-  - Sortable triage table
-  - Pie charts: risk, stack, cloud
-  - Screenshots embedded for high-value targets
 
 ---
 
@@ -98,5 +87,5 @@ This will generate:
 - `requests`, `pandas`, `jinja2`, `plotly`, `bs4`
 
 
-Bless this mess, pull requests by invite only at the moment--its me not you. Will be public after more people test and find it useful.
+#Bless this mess, pull requests by invite only at the moment--its me not you. Will be public after more people test and find it useful.
 
