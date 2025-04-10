@@ -1,5 +1,0 @@
-requests
-pandas
-jinja2
-plotly
-beautifulsoup4
