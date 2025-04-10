@@ -7,6 +7,7 @@ import time
 import json
 import logging
 from active_bucket_testing import generate_bucket_candidates, active_bucket_testing
+from subdomain_enumeration import run_subdomain_enumeration
 # ----------------------------
 # Display banner
 # ----------------------------
@@ -260,8 +261,10 @@ def main_menu(config, target):
         
         choice = input("Enter your choice: ").strip()
         if choice == '1':
+            #run_subdomain_enumeration(target, tool)
+            sub_target = input("Enter the target domain for subdomain enumeration: ").strip()
             tool = input("Choose enumeration tool (subfinder/assetfinder): ").strip().lower()
-            run_subdomain_enumeration(target, tool)
+            run_subdomain_enumeration(sub_target, tool)
         elif choice == '2':
             run_wayback_js(target)
         elif choice == '3':
