@@ -191,9 +191,14 @@ def main_menu(config, global_target, enrichment_subdomains, vuln_cache):
                     if vuln_res:
                         vuln_cache.extend(vuln_res)
         elif choice == '3':
-            run_cert_data(global_target)
+            # You can either use the global target or ask the user for a file with enrichment targets
+            cert_input = input("Enter a target or a file (e.g., subdomains.txt) for certificate data: ").strip()
+            cert_results = run_cert_data(cert_input)
+    # Optionally store cert_results in your report cache for later integration
         elif choice == '4':
-            run_github_search(global_target, config)
+            gh_input = input("Enter a target or subdomains file for GitHub search: ").strip()
+            gh_findings = run_github_search(gh_input, config)
+            # Optionally append gh_findings to a global report cache
         elif choice == '5':
             #run_shodan_query(global_target, config)
                 # Use the subdomains file if available or a single target.
@@ -225,7 +230,9 @@ def main_menu(config, global_target, enrichment_subdomains, vuln_cache):
                 for sub in enrichment_subdomains:
                     run_bucket_auditing(sub)
         elif choice == '10':
-            run_path_fuzzing(global_target)
+            pf_input = input("Enter a target or subdomains file for path fuzzing: ").strip()
+            fuzz_results = run_path_fuzzing(pf_input)
+            # Optionally append fuzz_results to a global report cache
         elif choice == '11':
             run_supply_chain_detection(global_target)
             print("Running Supply Chain Detection on the global target and enrichment subdomains...")
