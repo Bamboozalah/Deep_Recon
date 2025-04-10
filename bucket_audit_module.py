@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 import boto3
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError, NoCredentialsError, EndpointConnectionError
 import logging
+import sys
+import socket
+
 
 def init_logging():
     logging.basicConfig(
@@ -10,6 +13,7 @@ def init_logging():
         format='%(asctime)s %(levelname)s: %(message)s'
     )
     logging.info("Bucket Audit Module started.")
+
 
 def generate_bucket_candidates(target, derived_names=None):
     """
@@ -25,15 +29,18 @@ def generate_bucket_candidates(target, derived_names=None):
     word_bank = [
         "nerc", "cip", "incident", "response", "api", "apikey", "personaldata",
         "credentials", "creds", "supplychain", "maps", "backup", "docs", "assets",
-        "rockwellautomation", "schneiderelectric", "emerson", "siemens", "abb", "gevernova", "honeywell"
+        "rockwellautomation", "schneiderelectric", "emerson", "siemens", "abb",
+        "gevernova", "honeywell", "firmware", "binaries", "configs", "archives"
     ]
+
     candidates = set(derived_names)
     for word in word_bank:
-        candidates.add(f"{domain_base}-{word}")
-        candidates.add(f"{word}-{domain_base}")
-        candidates.add(f"{domain_base}{word}")
-        candidates.add(f"{word}{domain_base}")
+        candidates.update({
+            f"{domain_base}-{word}", f"{word}-{domain_base}",
+            f"{domain_base}{word}", f"{word}{domain_base}"
+        })
     return list(candidates)
+
 
 def test_bucket_access(bucket_name):
     """
@@ -56,13 +63,18 @@ def test_bucket_access(bucket_name):
                 "contents": []
             }
     except ClientError as e:
-        error_code = e.response['Error']['Code']
+        error_code = e.response['Error'].get('Code', 'Unknown')
         if error_code == "AccessDenied":
             return {"bucket": bucket_name, "status": "restricted"}
         elif error_code == "NoSuchBucket":
             return {"bucket": bucket_name, "status": "non-existent"}
         else:
+            logging.error(f"Unexpected error for bucket {bucket_name}: {error_code}")
             return {"bucket": bucket_name, "status": f"error: {error_code}"}
+    except (NoCredentialsError, EndpointConnectionError) as e:
+        logging.error(f"AWS connection issue: {e}")
+        return {"bucket": bucket_name, "status": "aws error"}
+
 
 def run_bucket_auditing(target):
     """
@@ -93,8 +105,8 @@ def run_bucket_auditing(target):
     logging.info("Bucket audit complete.")
     return results
 
+
 if __name__ == "__main__":
-    import sys
     if len(sys.argv) < 2:
         print("Usage: python3 bucket_audit_module.py <target>")
         sys.exit(1)
