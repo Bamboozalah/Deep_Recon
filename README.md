@@ -1,91 +1,41 @@
 # Deep_Recon
-Deep_Recon is a Dockerized OSINT automation tool that is designed for lazy analysts who don't like switching tools but need insight into asset exposure, cloud misconfigurations, and supply chain visibility.
----
-Note: subfinder is a deep scanner, if you want a more discrete/faster scan use assetfinder or leverage an external tool that can export results into a csv for Deep_Recon to process.
-
-
----
-## What does it do? 
-
-- Integrated subdomain enumeration (subfinder or assetfinder)
-- Risk scoring, cloud/tech stack detection
-- Error page extraction
-- Pivot suggestion engine (GitHub dorks, S3 hunt, path fuzzing)
-- Full HTML report with:
-  - Sortable triage table
-  - Pie charts: risk, stack, cloud
-  - Screenshots embedded for high-value targets
-
-
+Deep_Recon is an OSINT automation tool designed for lazy analysts who don't like switching tools but need insight into asset exposure, cloud misconfigurations, and supply chain visibility, etc.
 ---
 
+This tool can...should:
+- **Find Hidden Web Addresses:** Look for secret subdomains (like secret pages on a website).
+- **Check Old Website Files:** Look at old versions of website code to see if any secrets are left behind.
+- **Read Website Certificates:** See who a website’s certificate is from and get extra info like IP addresses.
+- **Search GitHub for Secrets:** Look for leaked passwords, secret API keys, and other secret codes.
+- **Hit up Shodan for Info:** Find out if a website or device has any open doors (open ports) or known problems.
+- **Take Screenshots:** Capture images of websites, especially if they look suss.
+- **Look for Error Pages:** Find pages that serve errors to find broken stuff or misconfigurations.
+- **Detect Cloud Services:** Determine what cloud provider the target uses (limited to AWS, Azure, or Google Cloud, atm).
+- **Fuzz for Hidden Pages:** Try common paths (like `/admin` or `/login`) to see if there are secret pages.
+- **Search for Supply Chain Secrets:** Look for systems or devices that might be vulnerable (like SCADA or industrial control systems).
 
-# Deep_Recon - Dockerized OSINT Recon Tool
+Deep_Recon will compile all the necessary information into a PDF and HTML report with charts, risk ratings, MITRE ATT&CK mapping, and screenshots
 
-## Instructions
+## What Do You Need?
 
-### Build the Docker Image
-```bash
-docker build -t reconbox .
-```
+Before you can use Deep_Recon, you need to install a few things:
 
-### Run a Recon Scan
-#### Subdomain Enumeration (default: subfinder)
-```bash
-docker run --rm -v $(pwd):/app reconbox --domain example.com
-```
+### Python Dependencies
+Deep_Recon uses some extra Python tools. Run pip3 install -r requirements.txt to install:
+- requests
+- reportlab
+- jinja2
+- shodan
+- boto3
+### External Tools
+You also need to install these:
+- **subfinder:** Helps find hidden web addresses.
+- **assetfinder:** Another tool for hidden web addresses.
+- **gowitness:** Takes pictures (screenshots) of websites.
 
-#### Fast Enumeration (assetfinder)
-```bash
-docker run --rm -v $(pwd):/app reconbox --domain example.com --mode fast
-```
+Check the **dependencies.txt** file for links and instructions.
 
-#### CSV-Based Scan
-```bash
-docker run --rm -v $(pwd):/app reconbox --input your_subdomains.csv
-```
-
-> Output files:
-> - `recon_results_*.csv`: full results
-> - `classified_recon_table_*.txt`: readable triage summary
-
----
-
-### Generate HTML Report
-```bash
-docker run --rm -v $(pwd):/app reconbox generate-report --input recon_results_example.com.csv --screenshots screenshots/
-```
-
-This will generate:
-- `recon_results_example.com_report.html` — interactive, dark-mode dashboard
-- Includes screenshots only for `HIGH` and `CRITICAL` targets
-
-> Screenshots should be named like `subdomain.example.com.png` and placed in the `screenshots/` directory.
+After installing the dependencies, external tools, and fetching your API keys run python3 deep_recon_cli.py to get started.
 
 
----
-
-##Directory Structure
-```
-.
-├── Dockerfile
-├── entrypoint.sh
-├── deep_recon_v2.py
-├── report_generator.py
-├── report_template.html
-├── requirements.txt
-├── screenshots/
-│   └── login.example.com.png
-├── recon_results_example.com.csv
-├── recon_results_example.com_report.html
-```
-
----
-
-##Dependencies (included in Docker)
-- `subfinder`, `assetfinder`
-- `requests`, `pandas`, `jinja2`, `plotly`, `bs4`
-
-
-#Bless this mess, pull requests by invite only at the moment--its me not you. Will be public after more people test and find it useful.
 
