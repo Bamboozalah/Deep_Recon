@@ -171,18 +171,14 @@ def main_menu(config, global_target, enrichment_subdomains, vuln_cache):
         if choice == '1':
             sub_target = input("Enter the target domain for subdomain enumeration: ").strip()
             tool = input("Choose enumeration tool (subfinder/assetfinder): ").strip().lower()
-            # Run the separate subdomain enumeration script externally.
             os.system(f"python3 subdomain_enumeration.py {sub_target} {tool}")
-            # Reload enrichment subdomains after enumeration.
             enrichment_subdomains = load_enrichment_subdomains()
         elif choice == '2':
-            # Run Wayback JS Extraction on the global target.
             print("Running Wayback JS Extraction on the global target...")
             js_urls, vuln_results = run_wayback_js_extraction(global_target)
             if vuln_results:
                 vuln_cache.clear()
                 vuln_cache.extend(vuln_results)
-            # Also run on enrichment subdomains (if any).
             if enrichment_subdomains:
                 print("\nRunning Wayback JS Extraction on enrichment subdomains...")
                 for sub in enrichment_subdomains:
@@ -206,12 +202,11 @@ def main_menu(config, global_target, enrichment_subdomains, vuln_cache):
             shodan_results = run_shodan_query(shodan_target, config)
             # may add feature to append shodan_results to a global report cache for later integration.
         elif choice == '6':
-            # Ask user if they want to use autoloaded enrichment data.
-            user_input = input("Enter a target URL or file (press Enter to autoload from subdomains.txt): ").strip()
-                if user_input == "":
-                    run_screenshot_capture()  # Autoloads from 'subdomains.txt'
-    else:
-        run_screenshot_capture(user_input)
+            screenshot_input = input("Enter a target URL or file (press Enter to autoload from subdomains.txt): ").strip()
+            if screenshot_input == "":
+                run_screenshot_capture()
+            else:
+                run_screenshot_capture(screenshot_input)
         elif choice == '7':
             print("Running Error Page Extraction on the global target...")
             run_error_page_extraction(global_target)
@@ -260,14 +255,18 @@ def main():
     init_logging()
     display_banner()
     config = load_config()
-    enrichment_subdomains = load_enrichment_subdomains()  # Load subdomain enumeration results if available.
-    vuln_cache = []  # Global cache for vulnerability findings from Wayback JS module.
+    enrichment_subdomains = load_enrichment_subdomains()
+    vuln_cache = []
     print("Welcome to Deep_Recon Interactive CLI!")
     http_proxy = os.environ.get("HTTP_PROXY", "Not set")
     https_proxy = os.environ.get("HTTPS_PROXY", "Not set")
     print(f"Detected HTTP Proxy: {http_proxy}")
     print(f"Detected HTTPS Proxy: {https_proxy}")
-    global_target = input("\nEnter the default target domain or IP (for modules other than subdomain enumeration): ").strip()
+    global_target = ""
+    while not global_target:
+        global_target = input("\nEnter the default target domain or IP (for modules other than subdomain enumeration): ").strip()
+        if not global_target:
+            print("Please enter a valid target (cannot be empty).")
     main_menu(config, global_target, enrichment_subdomains, vuln_cache)
 
 if __name__ == "__main__":
