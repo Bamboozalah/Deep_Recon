@@ -4,6 +4,9 @@ import logging
 import re
 import sys
 import os
+import json
+from urllib.parse import urlparse
+
 
 def init_logging():
     logging.basicConfig(
@@ -13,11 +16,8 @@ def init_logging():
     )
     logging.info("Cloud Detection Module started.")
 
+
 def load_targets(input_arg):
-    """
-    Reads targets from a file if input_arg ends with '.txt' and the file exists;
-    otherwise, returns a list containing the input_arg.
-    """
     targets = []
     if input_arg.endswith(".txt") and os.path.isfile(input_arg):
         try:
@@ -34,14 +34,10 @@ def load_targets(input_arg):
         targets.append(input_arg)
     return targets
 
+
 def detect_cloud_info(response):
-    """
-    Detects cloud provider or tech stack information from response headers and content.
-    Returns a list of detection strings.
-    """
     detections = []
     server = response.headers.get("Server", "").lower()
-    # Check Server header for common patterns:
     if "cloudflare" in server:
         detections.append("Cloudflare")
     if "amazon" in server or "aws" in server:
@@ -52,7 +48,7 @@ def detect_cloud_info(response):
         detections.append("nginx")
     if "apache" in server:
         detections.append("Apache")
-    # Check content for additional hints:
+
     content = response.text.lower()
     if "google cloud" in content or "gcp" in content:
         detections.append("Google Cloud")
@@ -64,7 +60,11 @@ def detect_cloud_info(response):
         detections.append("Drupal")
     if "joomla" in content:
         detections.append("Joomla")
+    if "s3.amazonaws.com" in content:
+        detections.append("Amazon S3")
+
     return list(set(detections))
+
 
 def run_cloud_detection(input_arg):
     init_logging()
@@ -73,6 +73,8 @@ def run_cloud_detection(input_arg):
     for target in targets:
         print(f"\n[Cloud Detection] Processing target: {target}")
         try:
+            if not target.startswith("http"):
+                target = f"http://{target}"
             response = requests.get(target, timeout=15)
             detections = detect_cloud_info(response)
             if detections:
@@ -85,6 +87,16 @@ def run_cloud_detection(input_arg):
             print(f"Error processing {target}: {e}")
     return all_detections
 
+
+def export_results(results, filename="cloud_detections.json"):
+    try:
+        with open(filename, "w") as f:
+            json.dump(results, f, indent=2)
+        print(f"Results exported to {filename}")
+    except Exception as e:
+        logging.error(f"Error writing results to file: {e}")
+
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: python3 cloud_detection_module.py <target_or_targets_file>")
@@ -94,6 +106,8 @@ def main():
     print("\n=== Cloud Detection Summary ===")
     for t, d in detections.items():
         print(f"{t}: {d}")
+    export_results(detections)
+
 
 if __name__ == "__main__":
     main()
