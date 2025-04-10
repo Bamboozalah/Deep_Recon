@@ -13,10 +13,10 @@ from github_search_module import run_github_search
 from shodan_query_module import run_shodan_query
 from screenshot_capture_module import run_screenshot_capture
 from error_page_extraction_module import run_error_page_extraction, process_target_or_file
-from cloud_detection_module import run_cloud_detection
 from path_fuzzing_module import run_path_fuzzing
-from supply_chain_module import run_supply_chain_detection
 from reporting_module import generate_reports
+from cloud_detection_module import run_cloud_detection
+from supply_chain_module import run_supply_chain_detection
 # ----------------------------
 # Display banner
 # ----------------------------
@@ -163,7 +163,7 @@ def main_menu(config, global_target, enrichment_subdomains, vuln_cache):
         print("8. Run Cloud/Techstack Detection")
         print("9. Run Bucket Auditing")
         print("10. Run S3 and Path Fuzzing")
-        print("11. Run Supply Chain Embedded Code Detection")
+        print("11. Run Supply Chain Detection")
         print("12. Generate Reports")
         print("13. Configure API Keys")
         print("0. Exit")
@@ -210,7 +210,14 @@ def main_menu(config, global_target, enrichment_subdomains, vuln_cache):
                 for sub in enrichment_subdomains:
                     run_error_page_extraction(sub)
         elif choice == '8':
-            run_cloud_detection(global_target)
+             print("Running Cloud Detection on the global target and enrichment subdomains...")
+            # Run on global target:
+            cloud_results = run_cloud_detection(global_target)
+            # Optionally, run on enrichment subdomains (if available)
+            if enrichment_subdomains:
+                for sub in enrichment_subdomains:
+                    print(f"\nProcessing enrichment subdomain: {sub}")
+                    cloud_results.update(run_cloud_detection(sub))
         elif choice == '9':
             run_bucket_auditing(global_target)
             if enrichment_subdomains:
@@ -221,6 +228,12 @@ def main_menu(config, global_target, enrichment_subdomains, vuln_cache):
             run_path_fuzzing(global_target)
         elif choice == '11':
             run_supply_chain_detection(global_target)
+            print("Running Supply Chain Detection on the global target and enrichment subdomains...")
+            supply_results = run_supply_chain_detection(global_target)
+            if enrichment_subdomains:
+                for sub in enrichment_subdomains:
+                print(f"\nProcessing enrichment subdomain: {sub}")
+                supply_results.update(run_supply_chain_detection(sub))
         elif choice == '12':
             generate_reports(global_target, vuln_cache)
         elif choice == '13':
