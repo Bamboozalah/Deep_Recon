@@ -6,6 +6,7 @@ import subprocess
 import time
 import json
 import logging
+from active_bucket_testing import generate_bucket_candidates, active_bucket_testing
 # ----------------------------
 # Display banner
 # ----------------------------
@@ -276,7 +277,13 @@ def main_menu(config, target):
         elif choice == '8':
             run_cloud_detection(target)
         elif choice == '9':
-            run_bucket_auditing(target)
+            #run_bucket_auditing(target)
+            derived_buckets = []  # Or pass a list of derived names from URL filtering.
+            candidate_buckets = generate_bucket_candidates(target, derived_buckets)
+            print("\nGenerated Candidate Buckets for Testing:")
+            for bucket in candidate_buckets:
+            print("  -", bucket)
+            active_bucket_testing(candidate_buckets)
         elif choice == '10':
             run_path_fuzzing(target)
         elif choice == '11':
