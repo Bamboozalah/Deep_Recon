@@ -5,7 +5,7 @@ import sys
 import json
 import logging
 
-# Import modular functionality (ensure these files are in the same directory)
+# Import modular functionality
 from subdomain_enumeration import run_subdomain_enumeration
 from wayback_js_module import run_wayback_js_extraction
 from cert_data_module import run_cert_data
@@ -18,6 +18,7 @@ from reporting_module import generate_reports
 from cloud_detection_module import run_cloud_detection
 from supply_chain_module import run_supply_chain_detection
 from bucket_auditing_module import run_bucket_auditing
+from risk_utils import apply_risk_score
 
 # ----------------------------
 # Display banner
@@ -102,13 +103,11 @@ def load_config():
     if os.path.isfile(config_file):
         try:
             with open(config_file, 'r') as f:
-                config = json.load(f)
-            return config
+                return json.load(f)
         except Exception as e:
             logging.error("Error loading config: " + str(e))
             return {}
-    else:
-        return {}
+    return {}
 
 def save_config(config):
     config_file = 'deep_recon_config.json'
@@ -127,12 +126,12 @@ def configure_api_keys(config):
     shodan_key = input("Enter Shodan API key (or leave blank to skip): ").strip()
     if shodan_key:
         config['shodan_api_key'] = shodan_key
-    save_choice = input("Would you like to save these keys for future sessions? (y/n): ").lower().strip()
+    save_choice = input("Save these keys for future sessions? (y/n): ").lower().strip()
     if save_choice == 'y':
         save_config(config)
-        print("API keys saved securely in configuration file.\n")
+        print("API keys saved securely.\n")
     else:
-        print("API keys will not be saved for future sessions.\n")
+        print("API keys will not be saved.\n")
     return config
 
 def load_enrichment_subdomains():
@@ -141,10 +140,7 @@ def load_enrichment_subdomains():
     if os.path.isfile(file_path):
         try:
             with open(file_path, "r") as f:
-                for line in f:
-                    line = line.strip()
-                    if line:
-                        enrichment.append(line)
+                enrichment = [line.strip() for line in f if line.strip()]
             print(f"Loaded {len(enrichment)} enrichment subdomains from {file_path}")
         except Exception as e:
             logging.error("Error loading enrichment subdomains: " + str(e))
@@ -153,6 +149,9 @@ def load_enrichment_subdomains():
     return enrichment
 
 def main_menu(config, global_target, enrichment_subdomains, vuln_cache):
+    cert_results = []
+    cert_domains = set()
+    all_targets = set(enrichment_subdomains)
     while True:
         print("\n========== Deep_Recon Interactive Menu ==========")
         print("1. Run Subdomain Enumeration")
@@ -172,80 +171,66 @@ def main_menu(config, global_target, enrichment_subdomains, vuln_cache):
         choice = input("Enter your choice: ").strip()
 
         if choice == '1':
-            sub_target = input("Enter the target domain for subdomain enumeration: ").strip()
-            tool = input("Choose enumeration tool (subfinder/assetfinder): ").strip().lower()
+            sub_target = input("Enter the target domain: ").strip()
+            tool = input("Choose tool (subfinder/assetfinder): ").strip().lower()
             os.system(f"python3 subdomain_enumeration.py {sub_target} {tool}")
             enrichment_subdomains = load_enrichment_subdomains()
+            all_targets.update(enrichment_subdomains)
 
         elif choice == '2':
-            print("Running Wayback JS Extraction on the global target...")
+            print("Running Wayback JS Extraction on global target...")
             js_urls, vuln_results = run_wayback_js_extraction(global_target)
-            if vuln_results:
-                vuln_cache.clear()
-                vuln_cache.extend(vuln_results)
-            if enrichment_subdomains:
-                print("\nRunning Wayback JS Extraction on enrichment subdomains...")
-                for sub in enrichment_subdomains:
-                    print(f"\nProcessing subdomain: {sub}")
-                    js_u, vuln_res = run_wayback_js_extraction(sub)
-                    if vuln_res:
-                        vuln_cache.extend(vuln_res)
+            vuln_results = apply_risk_score(vuln_results)
+            vuln_cache.clear()
+            vuln_cache.extend(vuln_results)
+            for sub in enrichment_subdomains:
+                print(f"\nProcessing subdomain: {sub}")
+                _, sub_vulns = run_wayback_js_extraction(sub)
+                vuln_cache.extend(apply_risk_score(sub_vulns))
 
         elif choice == '3':
-            cert_input = input("Enter a target or a file (e.g., subdomains.txt) for certificate data: ").strip()
+            cert_input = input("Enter target or file (e.g., subdomains.txt): ").strip()
             cert_results = run_cert_data(cert_input)
+            for result in cert_results:
+                cert_domains.update(result["certificate"].get("names", []))
+            all_targets.update(cert_domains)
 
         elif choice == '4':
-            gh_input = input("Enter a target or subdomains file for GitHub search: ").strip()
-            gh_findings = run_github_search(gh_input, config)
+            gh_input = input("Enter target or file: ").strip()
+            run_github_search(gh_input, config)
 
         elif choice == '5':
-            shodan_target = input("Enter target or subdomains file for Shodan query: ").strip()
-            shodan_results = run_shodan_query(shodan_target, config)
+            run_shodan_query(list(all_targets), config)
 
         elif choice == '6':
-            screenshot_input = input("Enter a target URL or file (press Enter to autoload from subdomains.txt): ").strip()
-            if screenshot_input == "":
-                run_screenshot_capture()
-            else:
-                run_screenshot_capture(screenshot_input)
+            print("Running Screenshot Capture prioritized by severity...")
+            run_screenshot_capture(targets=list(all_targets), prioritize_risky=True)
 
         elif choice == '7':
-            print("Running Error Page Extraction on the global target and enrichment subdomains...")
-            enrichment_targets = enrichment_subdomains.copy()
-            # Add cert-based domains if previously collected
-            if 'cert_results' in locals():
-                for result in cert_results:
-                enrichment_targets.extend(result["certificate"]["names"])
-                    run_error_page_extraction(global_target, enrichment_targets)
-
+            print("Running Error Page Extraction...")
+            run_error_page_extraction(global_target, list(all_targets))
 
         elif choice == '8':
-            print("Running Cloud Detection on the global target and enrichment subdomains...")
-            cloud_results = run_cloud_detection(global_target)
-            if enrichment_subdomains:
-                for sub in enrichment_subdomains:
-                    print(f"\nProcessing enrichment subdomain: {sub}")
-                    cloud_results.update(run_cloud_detection(sub))
+            print("Running Cloud Detection...")
+            run_cloud_detection(global_target)
+            for sub in all_targets:
+                print(f"\nProcessing: {sub}")
+                run_cloud_detection(sub)
 
         elif choice == '9':
             run_bucket_auditing(global_target)
-            if enrichment_subdomains:
-                print("\nRunning Bucket Auditing on enrichment subdomains...")
-                for sub in enrichment_subdomains:
-                    run_bucket_auditing(sub)
+            for sub in all_targets:
+                run_bucket_auditing(sub)
 
         elif choice == '10':
-            pf_input = input("Enter a target or subdomains file for path fuzzing: ").strip()
-            fuzz_results = run_path_fuzzing(pf_input)
+            pf_input = input("Enter target or file: ").strip()
+            run_path_fuzzing(pf_input)
 
         elif choice == '11':
-            print("Running Supply Chain Detection on the global target and enrichment subdomains...")
-            supply_results = run_supply_chain_detection(global_target)
-            if enrichment_subdomains:
-                for sub in enrichment_subdomains:
-                    print(f"\nProcessing enrichment subdomain: {sub}")
-                    supply_results.update(run_supply_chain_detection(sub))
+            print("Running Supply Chain Detection...")
+            run_supply_chain_detection(global_target)
+            for sub in all_targets:
+                run_supply_chain_detection(sub)
 
         elif choice == '12':
             generate_reports(global_target, vuln_cache)
@@ -258,7 +243,7 @@ def main_menu(config, global_target, enrichment_subdomains, vuln_cache):
             break
 
         else:
-            print("Invalid choice. Please try again.")
+            print("Invalid choice. Try again.")
 
 def main():
     init_logging()
@@ -267,16 +252,17 @@ def main():
     enrichment_subdomains = load_enrichment_subdomains()
     vuln_cache = []
     print("Welcome to Deep_Recon Interactive CLI!")
-    http_proxy = os.environ.get("HTTP_PROXY", "Not set")
-    https_proxy = os.environ.get("HTTPS_PROXY", "Not set")
-    print(f"Detected HTTP Proxy: {http_proxy}")
-    print(f"Detected HTTPS Proxy: {https_proxy}")
+    print(f"Detected HTTP Proxy: {os.environ.get('HTTP_PROXY', 'Not set')}")
+    print(f"Detected HTTPS Proxy: {os.environ.get('HTTPS_PROXY', 'Not set')}")
     global_target = ""
     while not global_target:
-        global_target = input("\nEnter the default target domain or IP (for modules other than subdomain enumeration): ").strip()
+        global_target = input("\nEnter default target domain or IP: ").strip()
         if not global_target:
-            print("Please enter a valid target (cannot be empty).")
+            print("Please enter a valid target.")
     main_menu(config, global_target, enrichment_subdomains, vuln_cache)
 
 if __name__ == "__main__":
     main()
+
+
+
