@@ -2,17 +2,26 @@
 #!/usr/bin/env python3
 import os
 import sys
-import subprocess
-import time
 import json
 import logging
-from active_bucket_testing import generate_bucket_candidates, active_bucket_testing
+
+# Import modular functionality (ensure these files are in the same directory)
 from subdomain_enumeration import run_subdomain_enumeration
+from wayback_js_module import run_wayback_js_extraction
+from cert_data_module import run_cert_data
+from github_search_module import run_github_search
+from shodan_query_module import run_shodan_query
+from screenshot_capture_module import run_screenshot_capture
+from error_page_extraction_module import run_error_page_extraction, process_target_or_file
+from cloud_detection_module import run_cloud_detection
+from path_fuzzing_module import run_path_fuzzing
+from supply_chain_module import run_supply_chain_detection
+from reporting_module import generate_reports
 # ----------------------------
 # Display banner
 # ----------------------------
 def display_banner():
-    neon_purple = "\033[38;2;238;130;238m"  # Bright neon purple
+    neon_purple = "\033[38;2;238;130;238m"
     reset = "\033[0m"
     banner = r"""
 ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▓▒▒▒▒▓▒▒▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▒▒▓░░░░░░░░░░░░░░░░░░▒▒▒░░▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▓█▓▓▓▒▒▒▓▓▓▓█▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
@@ -77,11 +86,7 @@ def display_banner():
 ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓█▓▓▓▓▓▓██▓▓▓█▓▓▓▓▓███████████████▓▓▒░░░░░░░░░░░▒█████████▓▓███▓████████████████████████████████████████████████████████████████
 """
     print(neon_purple + banner + reset)
-    print("Welcome to Deep_Recon!\n")
-
-# ----------------------------
-# Logging & Configuration
-# ----------------------------
+    
 def init_logging():
     logging.basicConfig(
         filename='deep_recon.log',
@@ -114,15 +119,12 @@ def save_config(config):
 
 def configure_api_keys(config):
     print("\n-- API Keys Configuration --")
-    # Ask for GitHub API key
     github_key = input("Enter GitHub API key (or leave blank to skip): ").strip()
     if github_key:
         config['github_api_key'] = github_key
-    # Ask for Shodan API key
     shodan_key = input("Enter Shodan API key (or leave blank to skip): ").strip()
     if shodan_key:
         config['shodan_api_key'] = shodan_key
-
     save_choice = input("Would you like to save these keys for future sessions? (y/n): ").lower().strip()
     if save_choice == 'y':
         save_config(config)
@@ -131,194 +133,119 @@ def configure_api_keys(config):
         print("API keys will not be saved for future sessions.\n")
     return config
 
-# ----------------------------
-# Utility Functions
-# ----------------------------
-def show_progress(task_name, duration=3):
-    print(f"\n{task_name} in progress", end="", flush=True)
-    for i in range(duration):
-        sys.stdout.write(".")
-        sys.stdout.flush()
-        time.sleep(1)
-    print(" Done.")
+def load_enrichment_subdomains():
+    enrichment = []
+    file_path = "subdomains.txt"
+    if os.path.isfile(file_path):
+        try:
+            with open(file_path, "r") as f:
+                for line in f:
+                    line = line.strip()
+                    if line:
+                        enrichment.append(line)
+            print(f"Loaded {len(enrichment)} enrichment subdomains from {file_path}")
+        except Exception as e:
+            logging.error("Error loading enrichment subdomains: " + str(e))
+    else:
+        print("No subdomains enumeration file found for enrichment.")
+    return enrichment
 
-# ----------------------------
-# Module Functionality
-# ----------------------------
-def run_subdomain_enumeration(target, tool='subfinder'):
-    print(f"\n[Subdomain Enumeration] Running on target '{target}' using {tool}...")
-    show_progress("Enumerating subdomains", duration=3)
-    try:
-        # In a real scenario, the tool would be executed.
-        if tool == 'subfinder':
-            cmd = ['subfinder', '-d', target, '-o', 'subdomains.txt']
-        elif tool == 'assetfinder':
-            cmd = ['assetfinder', '--subs-only', target]
-        else:
-            print("Invalid tool selected.")
-            return
-
-        # Uncomment below when the tool is installed:
-        # subprocess.run(cmd, check=True)
-        print("Subdomain enumeration completed. Results saved to subdomains.txt")
-        logging.info("Subdomain enumeration successful.")
-    except subprocess.CalledProcessError as e:
-        logging.error(f"Subdomain enumeration failed: {e}")
-        print("Error during subdomain enumeration.")
-
-def run_wayback_js(target):
-    print(f"\n[Wayback JS Extraction] Processing target '{target}'...")
-    show_progress("Extracting JavaScript URLs", duration=3)
-    print("Wayback JS extraction complete. Found 42 JavaScript URLs.")
-    logging.info("Wayback JS extraction completed.")
-
-def run_cert_data(target):
-    print(f"\n[Certificate Data] Collecting certificate information for '{target}'...")
-    show_progress("Fetching certificate information", duration=3)
-    print("Certificate data retrieval complete. Data saved to cert_data.json.")
-    logging.info("Certificate data retrieved.")
-
-def run_github_search(target, config):
-    print(f"\n[GitHub Search] Searching for exposed secrets related to '{target}'...")
-    if 'github_api_key' not in config:
-        print("GitHub API key not configured. Please use the API Keys menu option.")
-        return
-    show_progress("Searching GitHub", duration=3)
-    print("GitHub search complete. Exposed secrets (if any) documented.")
-    logging.info("GitHub search completed.")
-
-def run_shodan_query(target, config):
-    print(f"\n[Shodan Query] Executing Shodan queries for target '{target}'...")
-    if 'shodan_api_key' not in config:
-        print("Shodan API key not configured. Please use the API Keys menu option.")
-        return
-    show_progress("Querying Shodan", duration=3)
-    print("Shodan query complete. Results integrated into report.")
-    logging.info("Shodan query completed.")
-
-def run_screenshot_capture(target):
-    print(f"\n[Screenshot Capture] Capturing screenshots for target '{target}' using gowitness...")
-    show_progress("Taking screenshots", duration=3)
-    print("Screenshot capture complete. Screenshots saved in screenshots/ directory.")
-    logging.info("Screenshot capture completed.")
-
-def run_error_page_extraction(target):
-    print(f"\n[Error Page Extraction] Processing target '{target}'...")
-    show_progress("Extracting error pages", duration=3)
-    print("Error page extraction completed. Data saved for analysis.")
-    logging.info("Error page extraction completed.")
-
-def run_cloud_detection(target):
-    print(f"\n[Cloud/Techstack Detection] Analyzing target '{target}'...")
-    show_progress("Detecting technologies", duration=3)
-    print("Cloud and techstack detection complete. Findings updated.")
-    logging.info("Cloud/Techstack detection completed.")
-
-def run_bucket_auditing(target):
-    print(f"\n[Bucket Auditing] Auditing buckets for target '{target}'...")
-    show_progress("Auditing buckets", duration=3)
-    print("Bucket auditing complete. Potential misconfigurations documented.")
-    logging.info("Bucket auditing completed.")
-
-def run_path_fuzzing(target):
-    print(f"\n[S3 and Path Fuzzing] Executing fuzzing for target '{target}'...")
-    show_progress("Performing path fuzzing", duration=3)
-    print("Path fuzzing completed. Results recorded.")
-    logging.info("Path fuzzing completed.")
-
-def run_supply_chain_detection(target):
-    print(f"\n[Supply Chain Embedded Code Detection] Analyzing SCADA/OT systems for target '{target}'...")
-    show_progress("Detecting supply chain issues", duration=3)
-    print("Supply chain embedded code detection complete. Findings integrated.")
-    logging.info("Supply chain code detection completed.")
-
-def generate_reports(target):
-    print(f"\n[Report Generation] Generating PDF and HTML reports for target '{target}'...")
-    show_progress("Compiling reports", duration=3)
-    print("Reports generated: DeepRecon_Report.pdf and DeepRecon_Report.html.")
-    logging.info("Reports generated successfully.")
-
-# ----------------------------
-# Interactive Menu
-# ----------------------------
-def main_menu(config, target):
+def main_menu(config, global_target, enrichment_subdomains, vuln_cache):
     while True:
         print("\n========== Deep_Recon Interactive Menu ==========")
-        print("1. Subdomain Enumeration")
-        print("2. Wayback JS Extraction")
-        print("3. Certificate Data Compilation")
-        print("4. GitHub Search for Exposed Secrets")
-        print("5. Shodan Query")
-        print("6. Screenshot Capture")
-        print("7. Error Page Extraction")
-        print("8. Cloud/Techstack Detection")
-        print("9. Bucket Auditing")
-        print("10. S3 and Path Fuzzing")
-        print("11. Supply Chain Embedded Code Detection")
+        print("1. Run Subdomain Enumeration")
+        print("2. Run Wayback JS Extraction & Vulnerability Analysis")
+        print("3. Run Certificate Data Compilation")
+        print("4. Run GitHub Search for Exposed Secrets")
+        print("5. Run Shodan Query")
+        print("6. Run Screenshot Capture")
+        print("7. Run Error Page Extraction")
+        print("8. Run Cloud/Techstack Detection")
+        print("9. Run Bucket Auditing")
+        print("10. Run S3 and Path Fuzzing")
+        print("11. Run Supply Chain Embedded Code Detection")
         print("12. Generate Reports")
         print("13. Configure API Keys")
         print("0. Exit")
-        
         choice = input("Enter your choice: ").strip()
         if choice == '1':
-            #run_subdomain_enumeration(target, tool)
             sub_target = input("Enter the target domain for subdomain enumeration: ").strip()
             tool = input("Choose enumeration tool (subfinder/assetfinder): ").strip().lower()
-            run_subdomain_enumeration(sub_target, tool)
+            # Run the separate subdomain enumeration script externally.
+            os.system(f"python3 subdomain_enumeration.py {sub_target} {tool}")
+            # Reload enrichment subdomains after enumeration.
+            enrichment_subdomains = load_enrichment_subdomains()
         elif choice == '2':
-            run_wayback_js(target)
+            # Run Wayback JS Extraction on the global target.
+            print("Running Wayback JS Extraction on the global target...")
+            js_urls, vuln_results = run_wayback_js_extraction(global_target)
+            if vuln_results:
+                vuln_cache.clear()
+                vuln_cache.extend(vuln_results)
+            # Also run on enrichment subdomains (if any).
+            if enrichment_subdomains:
+                print("\nRunning Wayback JS Extraction on enrichment subdomains...")
+                for sub in enrichment_subdomains:
+                    print(f"\nProcessing subdomain: {sub}")
+                    js_u, vuln_res = run_wayback_js_extraction(sub)
+                    if vuln_res:
+                        vuln_cache.extend(vuln_res)
         elif choice == '3':
-            run_cert_data(target)
+            run_cert_data(global_target)
         elif choice == '4':
-            run_github_search(target, config)
+            run_github_search(global_target, config)
         elif choice == '5':
-            run_shodan_query(target, config)
+            #run_shodan_query(global_target, config)
+                # Use the subdomains file if available or a single target.
+            shodan_target = input("Enter target or subdomains file for Shodan query: ").strip()
+            shodan_results = run_shodan_query(shodan_target, config)
+            # may add feature to append shodan_results to a global report cache for later integration.
         elif choice == '6':
-            run_screenshot_capture(target)
+            run_screenshot_capture(global_target)
         elif choice == '7':
-            run_error_page_extraction(target)
+            print("Running Error Page Extraction on the global target...")
+            run_error_page_extraction(global_target)
+            if enrichment_subdomains:
+                print("\nRunning Error Page Extraction on enrichment subdomains...")
+                for sub in enrichment_subdomains:
+                    run_error_page_extraction(sub)
         elif choice == '8':
-            run_cloud_detection(target)
+            run_cloud_detection(global_target)
         elif choice == '9':
-            #run_bucket_auditing(target)
-            derived_buckets = []  # Or pass a list of derived names from URL filtering.
-            candidate_buckets = generate_bucket_candidates(target, derived_buckets)
-            print("\nGenerated Candidate Buckets for Testing:")
-            for bucket in candidate_buckets:
-            print("  -", bucket)
-            active_bucket_testing(candidate_buckets)
+            run_bucket_auditing(global_target)
+            if enrichment_subdomains:
+                print("\nRunning Bucket Auditing on enrichment subdomains...")
+                for sub in enrichment_subdomains:
+                    run_bucket_auditing(sub)
         elif choice == '10':
-            run_path_fuzzing(target)
+            run_path_fuzzing(global_target)
         elif choice == '11':
-            run_supply_chain_detection(target)
+            run_supply_chain_detection(global_target)
         elif choice == '12':
-            generate_reports(target)
+            generate_reports(global_target, vuln_cache)
         elif choice == '13':
             config = configure_api_keys(config)
         elif choice == '0':
             print("Exiting Deep_Recon. Goodbye!")
-            logging.info("Deep_Recon session ended by user.")
             break
         else:
             print("Invalid choice. Please try again.")
 
-# ----------------------------
-# Main Entry Point
-# ----------------------------
 def main():
     init_logging()
+    display_banner()
     config = load_config()
+    enrichment_subdomains = load_enrichment_subdomains()  # Load subdomain enumeration results if available.
+    vuln_cache = []  # Global cache for vulnerability findings from Wayback JS module.
     print("Welcome to Deep_Recon Interactive CLI!")
-    
-    # Display proxy settings inherited from the environment
     http_proxy = os.environ.get("HTTP_PROXY", "Not set")
     https_proxy = os.environ.get("HTTPS_PROXY", "Not set")
     print(f"Detected HTTP Proxy: {http_proxy}")
     print(f"Detected HTTPS Proxy: {https_proxy}")
-    
-    target = input("\nEnter the target domain or IP: ").strip()
-    main_menu(config, target)
+    global_target = input("\nEnter the default target domain or IP (for modules other than subdomain enumeration): ").strip()
+    main_menu(config, global_target, enrichment_subdomains, vuln_cache)
 
 if __name__ == "__main__":
     main()
+
 
