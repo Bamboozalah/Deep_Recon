@@ -211,12 +211,14 @@ def main_menu(config, global_target, enrichment_subdomains, vuln_cache):
                 run_screenshot_capture(screenshot_input)
 
         elif choice == '7':
-            print("Running Error Page Extraction on the global target...")
-            run_error_page_extraction(global_target)
-            if enrichment_subdomains:
-                print("\nRunning Error Page Extraction on enrichment subdomains...")
-                for sub in enrichment_subdomains:
-                    run_error_page_extraction(sub)
+            print("Running Error Page Extraction on the global target and enrichment subdomains...")
+            enrichment_targets = enrichment_subdomains.copy()
+            # Add cert-based domains if previously collected
+            if 'cert_results' in locals():
+                for result in cert_results:
+                enrichment_targets.extend(result["certificate"]["names"])
+                    run_error_page_extraction(global_target, enrichment_targets)
+
 
         elif choice == '8':
             print("Running Cloud Detection on the global target and enrichment subdomains...")
