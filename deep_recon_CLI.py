@@ -206,7 +206,12 @@ def main_menu(config, global_target, enrichment_subdomains, vuln_cache):
             shodan_results = run_shodan_query(shodan_target, config)
             # may add feature to append shodan_results to a global report cache for later integration.
         elif choice == '6':
-            run_screenshot_capture(global_target)
+            # Ask user if they want to use autoloaded enrichment data.
+            user_input = input("Enter a target URL or file (press Enter to autoload from subdomains.txt): ").strip()
+                if user_input == "":
+                    run_screenshot_capture()  # Autoloads from 'subdomains.txt'
+    else:
+        run_screenshot_capture(user_input)
         elif choice == '7':
             print("Running Error Page Extraction on the global target...")
             run_error_page_extraction(global_target)
