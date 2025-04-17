@@ -1,49 +1,37 @@
-#!/usr/bin/env python3
+
 import subprocess
 import logging
-import sys
 
-def init_logging():
-    logging.basicConfig(
-        filename='subdomain_enumeration.log',
-        level=logging.INFO,
-        format='%(asctime)s %(levelname)s: %(message)s'
-    )
-    logging.info("Subdomain Enumeration Script Started.")
-
-def run_subdomain_enumeration(target, tool='subfinder'):
-    """
-    Runs subdomain enumeration on the given target using either subfinder or assetfinder.
-    The results are saved to 'subdomains.txt'.
-    """
-    print(f"Starting subdomain enumeration on: {target} using {tool}...")
+def run_subdomain_enumeration(domain, tool='subfinder'):
+    logging.info(f"Starting subdomain enumeration on: {domain} using {tool}")
     try:
         if tool.lower() == 'subfinder':
-            cmd = ['subfinder', '-d', target, '-o', 'subdomains.txt']
+            cmd = ['subfinder', '-d', domain, '-silent']
         elif tool.lower() == 'assetfinder':
-            cmd = ['assetfinder', '--subs-only', target]
+            cmd = ['assetfinder', '--subs-only', domain]
         else:
-            print("Invalid tool specified. Use 'subfinder' or 'assetfinder'.")
-            return False
+            logging.warning(f"Unknown tool {tool}, defaulting to subfinder.")
+            cmd = ['subfinder', '-d', domain, '-silent']
 
-        subprocess.run(cmd, check=True)
-        print("Subdomain enumeration completed. Results saved to subdomains.txt")
-        logging.info("Subdomain enumeration completed successfully.")
-        return True
-    except subprocess.CalledProcessError as e:
-        print("Error during subdomain enumeration.")
-        logging.error(f"Subdomain enumeration failed: {e}")
-        return False
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        if result.returncode == 0:
+            subdomains = list(set(result.stdout.strip().split('\n')))
+            logging.info(f"Found {len(subdomains)} subdomains for {domain}")
+            return subdomains
+        else:
+            logging.error(f"Subdomain enumeration failed for {domain}: {result.stderr}")
+            return []
+    except Exception as e:
+        logging.error(f"Exception during subdomain enumeration for {domain}: {e}")
+        return []
 
-def main():
-    init_logging()
-    if len(sys.argv) < 3:
-        print("Usage: python3 subdomain_enumeration.py <target> <tool>")
-        print("Example: python3 subdomain_enumeration.py example.com subfinder")
-        sys.exit(1)
-    target = sys.argv[1]
-    tool = sys.argv[2]
-    run_subdomain_enumeration(target, tool)
+def run(shared_data):
+    logging.info("Running Subdomain Enumeration Module")
+    root_domain = shared_data.get("root_domain")
+    if not root_domain:
+        logging.error("No root domain provided in shared_data['root_domain']")
+        return []
 
-if __name__ == "__main__":
-    main()
+    subdomains = run_subdomain_enumeration(root_domain)
+    shared_data["subdomains"] = subdomains
+    return subdomains

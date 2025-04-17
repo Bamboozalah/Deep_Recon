@@ -1,41 +1,33 @@
-#!/usr/bin/env python3
+
 import subprocess
-import logging
 import os
+import logging
 
-def init_logging():
-    logging.basicConfig(
-        filename='screenshot_capture_module.log',
-        level=logging.INFO,
-        format='%(asctime)s %(levelname)s: %(message)s'
-    )
-    logging.info("Screenshot Capture Module started.")
-
-def run_screenshot_capture(target):
-    """
-    Invokes an external screenshot tool (such gowitness) to capture a screenshot
-    of the provided target URL. Screenshots are saved in a folder called 'screenshots'.
-    """
-    init_logging()
-    print(f"\n[Screenshot Capture Module] Capturing screenshot for target: {target}")
+def run_screenshot_capture(domains):
     output_dir = "screenshots"
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-    # Command to capture a screenshot using gowitness.
-    # This uses the 'single' command; can be adjusted.
-    cmd = ["gowitness", "single", "--url", target, "--destination", output_dir]
-    try:
-        subprocess.run(cmd, check=True)
-        print(f"Screenshot captured for {target}, saved in directory '{output_dir}'.")
-        logging.info("Screenshot capture complete.")
-    except subprocess.CalledProcessError as e:
-        print(f"Error capturing screenshot for {target}.")
-        logging.error(f"Screenshot capture failed: {e}")
+    os.makedirs(output_dir, exist_ok=True)
+    result_paths = {}
 
-if __name__ == "__main__":
-    import sys
-    if len(sys.argv) < 2:
-        print("Usage: python3 screenshot_capture_module.py <target>")
-        sys.exit(1)
-    target = sys.argv[1]
-    run_screenshot_capture(target)
+    for domain in domains:
+        url = f"https://{domain}"
+        outfile = os.path.join(output_dir, f"{domain}.png")
+        try:
+            cmd = ["gowitness", "single", "--url", url, "--destination", outfile]
+            subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=30)
+            if os.path.exists(outfile):
+                result_paths[domain] = outfile
+                logging.info(f"Screenshot saved for {domain}")
+        except Exception as e:
+            logging.warning(f"Screenshot failed for {domain}: {e}")
+    return result_paths
+
+def run(shared_data):
+    logging.info("Running Screenshot Capture Module")
+    subdomains = shared_data.get("subdomains", [])
+    if not subdomains:
+        logging.warning("No subdomains to screenshot.")
+        return {}
+
+    screenshots = run_screenshot_capture(subdomains)
+    shared_data["screenshots"] = screenshots
+    return screenshots
