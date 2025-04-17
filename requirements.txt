@@ -1,5 +1,0 @@
-requests
-reportlab
-jinja2
-shodan
-boto3
