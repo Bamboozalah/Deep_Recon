@@ -90,7 +90,7 @@ def print_banner():
 ▓▓▓▓▓░    ░░░░░▒▓▓███▒░░░ ░░░░▒▓▓▒░░░░░  ░▓██░░░░▓████▓▓▓▓▓███████▓▓▓▓▓░░░░▓██░ ░░░▓██░░░░░░░░░▒████▒░░░░░  ░▒██▓░░░░░░░░░▓███▓░░░▒█████▓░░░░░▓██████
 ▓▓▓▓▓▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒▒▒▒▓▓▓▓▓▒▒▓▓▓▓▓███▓▓▓▓▓████▓▓▓█████████▓▓▓▓█▓▓▓▓▓███▒▒▓▓▓▓█▓▓▓▓▓▒▓▓▓▓██████▓▒▒▒▒▒▓▓████▓▒▒▒▒▒▓█████▓▓▓▓▓███████▓▓▓▓▓██████
 ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓█▓▓▓▓▓▓██▓▓▓█▓▓▓▓▓███████████████▓▓▒░░░░░░░░░░░▒█████████▓▓███▓████████████████████████████████████████████████████████████████
-""""
+"""
     console.print(banner, style="bold magenta")
 
 def load_api_keys():
@@ -119,20 +119,20 @@ def recon_menu(shared_data):
         console.print("\n[bold magenta]Choose a module to run:[/bold magenta]")
         console.print("1. Subdomain Enumeration")
         console.print("2. Certificate Analysis")
-        console.print("3. GitHub Search")
-        console.print("4. Shodan Scan")
-        console.print("5. Cloud Fingerprint Detection")
-        console.print("6. Wayback JS + Vulnerabilities")
-        console.print("7. Error Page Extraction")
-        console.print("8. Path Fuzzing")
-        console.print("9. Supply Chain Analysis")
-        console.print("10. Cloud Bucket Audit")
-        console.print("11. ICS Exposure Detection")
-        console.print("12. Screenshot Capture")
-        console.print("13. Run [bold cyan]ALL[/bold cyan] Modules in Sequence")
-        console.print("14. Generate Report")
-        console.print("15. Configure API Keys")
-        print("16. Grid IP Harvester")
+        console.print("3. Grid IP Harvester")
+        console.print("4. GitHub Search")
+        console.print("5. Shodan Scan")
+        console.print("6. Cloud Fingerprint Detection")
+        console.print("7. Wayback JS + Vulnerabilities")
+        console.print("8. Error Page Extraction")
+        console.print("9. Path Fuzzing")
+        console.print("10. Supply Chain Analysis")
+        console.print("11. Cloud Bucket Audit")
+        console.print("12. ICS Exposure Detection")
+        console.print("13. Screenshot Capture")
+        console.print("14. Run [bold cyan]ALL[/bold cyan] Modules in Sequence")
+        console.print("15. Generate Report")
+        console.print("16. Configure API Keys")
         console.print("0. Exit")
 
         choice = Prompt.ask("\n[bold yellow]Enter your choice[/bold yellow]", default="0")
@@ -140,46 +140,47 @@ def recon_menu(shared_data):
         if choice == "1":
             run_subdomains(shared_data)
         elif choice == "2":
-            
-        elif choice == "3":
-            run_github(shared_data)
-        elif choice == "4":
-            run_shodan(shared_data)
-        elif choice == "5":
-            run_cloud(shared_data)
-        elif choice == "6":
-            run_wayback(shared_data)
-        elif choice == "7":
-            run_errors(shared_data)
-        elif choice == "8":
-            run_paths(shared_data)
-        elif choice == "9":
-            run_supply(shared_data)
-        elif choice == "10":
-            run_buckets(shared_data)
-        elif choice == "11":
-            run_ics(shared_data)
-        elif choice == "12":
-            run_screens(shared_data)
-        elif choice == "13":
-            run_subdomains(shared_data)
             run_cert(shared_data)
+        elif choice == "3":
+            run_grid_harvest(shared_data)
+        elif choice == "4":
             run_github(shared_data)
+        elif choice == "5":
             run_shodan(shared_data)
+        elif choice == "6":
             run_cloud(shared_data)
+        elif choice == "7":
             run_wayback(shared_data)
+        elif choice == "8":
             run_errors(shared_data)
+        elif choice == "9":
             run_paths(shared_data)
+        elif choice == "10":
             run_supply(shared_data)
+        elif choice == "11":
             run_buckets(shared_data)
+        elif choice == "12":
             run_ics(shared_data)
+        elif choice == "13":
             run_screens(shared_data)
         elif choice == "14":
-            generate_reports(shared_data)
-            print("\n[✔] Reports saved to: output/report.html, .csv, and .json")
-        elif choice == "16":
-            run_grid_harvest(config, global_target, enrichment_subdomains)
+            run_subdomains(shared_data)
+            run_cert(shared_data)
+            run_grid_harvest(shared_data)
+            run_github(shared_data)
+            run_shodan(shared_data)
+            run_cloud(shared_data)
+            run_wayback(shared_data)
+            run_errors(shared_data)
+            run_paths(shared_data)
+            run_supply(shared_data)
+            run_buckets(shared_data)
+            run_ics(shared_data)
+            run_screens(shared_data)
         elif choice == "15":
+            generate_reports(shared_data)
+            console.print("\n[✔] Reports saved to: output/report.html, .csv, and .json")
+        elif choice == "16":
             configure_api_keys()
         elif choice == "0":
             console.print("\n[bold red]Exiting Deep Recon.[/bold red]")
