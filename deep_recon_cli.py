@@ -4,7 +4,6 @@ import os
 import sys
 import logging
 import json
-from dotenv import load_dotenv
 from rich.console import Console
 from rich.prompt import Prompt
 from reporting_module import generate_reports
