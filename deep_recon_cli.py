@@ -12,6 +12,7 @@ from reporting_module import generate_reports
 # Load recon modules (ensure all accept shared_data and return results into it)
 from subdomain_enumeration import run as run_subdomains
 from cert_data_module import run as run_cert
+from grid_ip_harvester_module import run as run_grid_harvest
 from github_search_module import run as run_github
 from shodan_query_module import run as run_shodan
 from screenshot_capture_module import run as run_screens
