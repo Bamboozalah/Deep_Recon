@@ -66,13 +66,10 @@ def run(shared_data):
         else:
             return "info"
 
-    result = {
-        "aws": {"status": aws_result, "severity": severity_level(aws_result)},
-        "gcp": {"status": gcp_result, "severity": severity_level(gcp_result)},
-        "azure": {"status": azure_result, "severity": severity_level(azure_result)}
-    
-            "gcp": check_bucket_url(f"https://storage.googleapis.com/{name}"),
-            "azure": check_bucket_url(f"https://{name}.blob.core.windows.net")
+        result = {
+            "aws": {"status": aws_result, "severity": severity_level(aws_result)},
+            "gcp": {"status": gcp_result, "severity": severity_level(gcp_result)},
+            "azure": {"status": azure_result, "severity": severity_level(azure_result)}
         }
         results[name] = result
         if "public-readable" in result.values():
