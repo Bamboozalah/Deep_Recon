@@ -44,8 +44,8 @@ It combines passive data collection, open-source intelligence (OSINT), and optio
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/Deep-Recon.git
-cd Deep-Recon
+git clone https://github.com/your-username/Deep_Recon.git
+cd Deep_Recon
 
 # Install dependencies
 pip install -r requirements.txt
