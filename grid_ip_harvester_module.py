@@ -38,4 +38,7 @@ def run(shared_data):
     shared_data["grid_asns"] = sorted(asns)
     shared_data["grid_ips"] = sorted(ip_ranges)
 
+def fetch_grid_related_ips(shared_data):
+    return run(shared_data)
+
     logging.info(f"Identified {len(asns)} ASNs and {len(ip_ranges)} IPs for scanning.")
