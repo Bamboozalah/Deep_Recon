@@ -1,3 +1,4 @@
+load_dotenv(dotenv_path='config/api_keys.env')
 
 import os
 import logging

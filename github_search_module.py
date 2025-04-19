@@ -25,8 +25,6 @@ def github_search(domain, token=None):
         logging.error(f"GitHub search error: {e}")
         return []
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
-
 def run(shared_data):
     logging.info("Running GitHub Search Module")
     domain = shared_data.get("root_domain")

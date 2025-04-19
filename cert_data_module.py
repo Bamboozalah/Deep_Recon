@@ -22,13 +22,7 @@ def get_cert_info(domain, port=443):
         logging.warning(f"Could not retrieve cert for {domain}: {e}")
         return None
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
-
 def run(shared_data):
-    try:
-        timeout = int(input("Enter SSL timeout (default 5 seconds): ") or 5)
-    except ValueError:
-        timeout = 5
     logging.info("Running Certificate Data Module")
     subdomains = shared_data.get("subdomains", [])
     results = {}

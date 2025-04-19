@@ -60,16 +60,6 @@ def save_html_report(data, output_dir):
         <h1>Deep Recon Report</h1>
         {% for module, results in data.items() %}
             <h2>{{ module }}</h2>
-        {% if module == "screenshots" %}
-        <div style="display:flex; flex-wrap:wrap;">
-            {% for host, img in results.items() %}
-                <div style="margin:10px;text-align:center;">
-                    <img src="{{ img }}" alt="{{ host }}" width="300"><br>
-                    <strong>{{ host }}</strong>
-                </div>
-            {% endfor %}
-        </div>
-        {% endif %}
             {% if results is mapping %}
                 <table>
                     <thead><tr><th>Key</th><th>Field</th><th>Value</th></tr></thead>

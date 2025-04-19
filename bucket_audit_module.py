@@ -44,8 +44,6 @@ def check_bucket_url(url):
         logging.warning(f"Error checking {url}: {e}")
         return "error"
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
-
 def run(shared_data):
     logging.info("Running Public Cloud Bucket Audit (No Credentials)")
     domain = shared_data.get("root_domain", "")
@@ -56,22 +54,10 @@ def run(shared_data):
 
     results = {}
     for name in bucket_names:
-        aws_result = check_bucket_url(f"https://{name}.s3.amazonaws.com")
-    gcp_result = check_bucket_url(f"https://storage.googleapis.com/{name}")
-    azure_result = check_bucket_url(f"https://{name}.blob.core.windows.net")
-
-    def severity_level(result): 
-        if "public-readable" in result:
-            return "high"
-        elif "exists-not-listable" in result:
-            return "medium"
-        else:
-            return "info"
-
         result = {
-            "aws": {"status": aws_result, "severity": severity_level(aws_result)},
-            "gcp": {"status": gcp_result, "severity": severity_level(gcp_result)},
-            "azure": {"status": azure_result, "severity": severity_level(azure_result)}
+            "aws": check_bucket_url(f"https://{name}.s3.amazonaws.com"),
+            "gcp": check_bucket_url(f"https://storage.googleapis.com/{name}"),
+            "azure": check_bucket_url(f"https://{name}.blob.core.windows.net")
         }
         results[name] = result
         if "public-readable" in result.values():

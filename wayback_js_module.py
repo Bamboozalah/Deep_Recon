@@ -22,8 +22,6 @@ def fetch_wayback_js(domain):
         logging.error(f"Error querying Wayback for {domain}: {e}")
     return js_urls
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
-
 def run(shared_data):
     logging.info("Running Wayback JS Module")
     domain = shared_data.get("root_domain")

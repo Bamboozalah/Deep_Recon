@@ -17,9 +17,12 @@ def extract_third_party_domains(html, base_url):
                 domains.add(domain)
     return list(domains)
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
-
 def run(shared_data):
+    subdomains = shared_data.get("subdomains") or shared_data.get("cert_domains") or []
+    if not subdomains:
+        logging.warning("No subdomains available. Consider running Subdomain or Cert modules first.")
+        return
+
     logging.info("Running Supply Chain Module")
     subdomains = shared_data.get("subdomains", [])
     if not subdomains:
@@ -42,14 +45,3 @@ def run(shared_data):
 
     shared_data["supply_chain"] = supply_map
     return supply_map
-
-
-def lookup_vendor_cves(vendor):
-    try:
-        r = requests.get(f"https://cve.circl.lu/api/search/{vendor}", timeout=10)
-        if r.status_code == 200:
-            data = r.json()
-            return [c["id"] for c in data.get("data", [])[:5]]  # Limit to 5 CVEs
-    except Exception as e:
-        logging.warning(f"Failed to fetch CVEs for {vendor}: {e}")
-    return []

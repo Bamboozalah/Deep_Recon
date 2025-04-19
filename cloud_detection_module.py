@@ -21,9 +21,12 @@ def detect_cloud_from_headers(headers):
                 stack.append(cloud)
     return list(set(stack))
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
-
 def run(shared_data):
+    subdomains = shared_data.get("subdomains") or shared_data.get("cert_domains") or []
+    if not subdomains:
+        logging.warning("No subdomains available. Consider running Subdomain or Cert modules first.")
+        return
+
     logging.info("Running Cloud Detection Module")
 
     subdomains = shared_data.get("subdomains", [])

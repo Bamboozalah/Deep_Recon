@@ -22,6 +22,11 @@ def run_screenshot_capture(domains):
     return result_paths
 
 def run(shared_data):
+    subdomains = shared_data.get("subdomains") or shared_data.get("cert_domains") or []
+    if not subdomains:
+        logging.warning("No subdomains available. Consider running Subdomain or Cert modules first.")
+        return
+
     logging.info("Running Screenshot Capture Module")
     subdomains = shared_data.get("subdomains", [])
     if not subdomains:

@@ -22,9 +22,12 @@ def fuzz_paths(domain):
             logging.debug(f"Request to {url} failed: {e}")
     return results
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
-
 def run(shared_data):
+    subdomains = shared_data.get("subdomains") or shared_data.get("cert_domains") or []
+    if not subdomains:
+        logging.warning("No subdomains available. Consider running Subdomain or Cert modules first.")
+        return
+
     logging.info("Running Path Fuzzing Module")
     subdomains = shared_data.get("subdomains", [])
     if not subdomains:

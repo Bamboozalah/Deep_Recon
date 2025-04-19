@@ -5,12 +5,9 @@ import sys
 import logging
 import json
 from dotenv import load_dotenv
-load_dotenv()
-from dotenv import load_dotenv
 from rich.console import Console
 from rich.prompt import Prompt
 from reporting_module import generate_reports
-from grid_ip_harvester import run as run_grid_harvest
 
 # Load recon modules (ensure all accept shared_data and return results into it)
 from subdomain_enumeration import run as run_subdomains
@@ -179,7 +176,6 @@ def recon_menu(shared_data):
             run_screens(shared_data)
         elif choice == "15":
             generate_reports(shared_data)
-            console.print("\n[✔] Reports saved to: output/report.html, .csv, and .json")
         elif choice == "16":
             configure_api_keys()
         elif choice == "0":
