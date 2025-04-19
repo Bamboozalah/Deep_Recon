@@ -59,7 +59,7 @@ echo "GITHUB_TOKEN=your_token" >> config/api_keys.env
 
 #Run Deep_Recon
 python3 deep_recon_cli.py
-'''
+```
 ---
 ## You’ll be guided through an interactive menu to:
 -Input a domain
