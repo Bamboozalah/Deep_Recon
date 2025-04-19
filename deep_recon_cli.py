@@ -149,7 +149,7 @@ def recon_menu(shared_data):
         elif choice == "4":
             run_github(shared_data)
         elif choice == "5":
-    if not shared_data.get("subdomains"): logging.warning("Subdomains missing before Shodan scan.")
+        if not shared_data.get("subdomains"): logging.warning("Subdomains missing before Shodan scan.")
             run_shodan(shared_data)
         elif choice == "6":
             run_cloud(shared_data)
@@ -164,7 +164,7 @@ def recon_menu(shared_data):
         elif choice == "11":
             run_buckets(shared_data)
         elif choice == "12":
-    if not shared_data.get("grid_ips"): logging.warning("Grid IPs missing before ICS exposure scan.")
+        if not shared_data.get("grid_ips"): logging.warning("Grid IPs missing before ICS exposure scan.")
             run_ics(shared_data)
         elif choice == "13":
             run_screens(shared_data)
