@@ -1,41 +1,69 @@
-# Deep_Recon
-Deep_Recon is an OSINT automation tool designed for lazy analysts who don't like switching tools but need insight into asset exposure, cloud misconfigurations, and supply chain visibility, etc.
+# Deep Recon — Grid Intelligence & Exposure Reconnaissance Toolkit
+
+**Deep Recon** is a modular, CLI-driven reconnaissance framework designed to assist security researchers and analysts in mapping external exposure of internet-connected infrastructure, with a focus on energy, utilities, and critical sectors.
+
+It combines passive data collection, open-source intelligence (OSINT), and optional third-party API integrations to support responsible threat analysis, technical discovery, and reporting.
+
 ---
 
-This tool can...should:
-- **Find Hidden Web Addresses:** Look for secret subdomains (like secret pages on a website).
-- **Check Old Website Files:** Look at old versions of website code to see if any secrets are left behind.
-- **Read Website Certificates:** See who a website’s certificate is from and get extra info like IP addresses.
-- **Search GitHub for Secrets:** Look for leaked passwords, secret API keys, and other secret codes.
-- **Hit up Shodan for Info:** Find out if a website or device has any open doors (open ports) or known problems.
-- **Take Screenshots:** Capture images of websites, especially if they look suss.
-- **Look for Error Pages:** Find pages that serve errors to find broken stuff or misconfigurations.
-- **Detect Cloud Services:** Determine what cloud provider the target uses (limited to AWS, Azure, or Google Cloud, atm).
-- **Fuzz for Hidden Pages:** Try common paths (like `/admin` or `/login`) to see if there are secret pages.
-- **Search for Supply Chain Secrets:** Look for systems or devices that might be vulnerable (like SCADA or industrial control systems).
+## Key Features
 
-Deep_Recon will compile all the necessary information into a PDF and HTML report with charts, risk ratings, MITRE ATT&CK mapping, and screenshots
+-  Subdomain enumeration and TLS certificate analysis
+-  Cloud bucket audits (AWS, Azure, GCP)
+-  Exposure checks for ICS/SCADA devices using public data
+-  Tech stack and cloud provider fingerprinting
+-  GitHub secrets search and historical JS analysis
+-  Supply chain mapping via third-party domain analysis
+-  Visual screenshots of exposed services
+-  HTML, CSV, and JSON reporting with summaries and severity filters
 
-## What Do You Need?
+---
 
-Before you can use Deep_Recon, you need to install a few things:
+## Use Cases
 
-### Python Dependencies
-Deep_Recon uses some extra Python tools. Run pip3 install -r requirements.txt to install:
-- requests
-- reportlab
-- jinja2
-- shodan
-- boto3
-### External Tools
-You also need to install these:
-- **subfinder:** Helps find hidden web addresses.
-- **assetfinder:** Another tool for hidden web addresses.
-- **gowitness:** Takes pictures (screenshots) of websites.
+- **Cyber Threat Intelligence (CTI):** Map internet-facing assets for attribution or exposure analysis.
+- **Blue Team Reconnaissance:** Understand your organization’s shadow IT and third-party risks.
+- **Incident Response Preparation:** Identify publicly accessible infrastructure for proactive monitoring.
+- **Grid Sector Research:** Enrich public data for energy-sector exposure reports or analysis.
 
-Check the **dependencies.txt** file for links and instructions.
+>**Note:** This tool is intended for lawful and ethical use in research and internal assessments only. Unauthorized scanning of networks you do not own or have permission to test is strictly prohibited.
 
-After installing the dependencies, external tools, and fetching your API keys run python3 deep_recon_cli.py to get started.
+---
 
+## Requirements
+
+- Python 3.9+
+- Dependencies listed in `requirements.txt`
+- Third-party tools (installed separately):
+  - [`subfinder`](https://github.com/projectdiscovery/subfinder)
+  - [`assetfinder`](https://github.com/tomnomnom/assetfinder)
+
+---
+
+##Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/your-username/Deep-Recon.git
+cd Deep-Recon
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Install subfinder & assetfinder separately (if needed)
+
+# Create API key config
+mkdir config
+echo "SHODAN_API_KEY=your_key" > config/api_keys.env
+echo "GITHUB_TOKEN=your_token" >> config/api_keys.env
+
+#Run Deep_Recon
+python3 deep_recon_cli.py
+'''
+---
+## You’ll be guided through an interactive menu to:
+-Input a domain
+-Run specific modules or the full pipeline
+-Generate detailed reports
 
 
