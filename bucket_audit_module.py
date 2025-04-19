@@ -1,4 +1,27 @@
 
+import time
+import requests
+import logging
+from requests.exceptions import SSLError, Timeout, ConnectionError
+
+def request_with_retries(url, retries=2, delay=0.25, verbose=False):
+    for attempt in range(1, retries + 1):
+        try:
+            response = requests.get(url, timeout=5)
+            return response.status_code
+        except SSLError:
+            logging.warning(f"SSL Error (skipped retry): {url}")
+            return "ssl_error"
+        except Timeout:
+            logging.warning(f"Timeout (attempt {attempt}): {url}")
+        except ConnectionError:
+            logging.warning(f"Connection error (attempt {attempt}): {url}")
+        except Exception as e:
+            logging.warning(f"Other error (attempt {attempt}): {e}")
+        if verbose:
+            time.sleep(delay)
+    return None
+
 import requests
 import logging
 
@@ -29,22 +52,14 @@ def generate_bucket_candidates(domain, company=None, subdomains=None):
             candidates.add(base)
     return sorted(candidates)
 
-def check_bucket_url(url):
-    try:
-        r = requests.get(url, timeout=5)
-        if r.status_code == 200:
-            return "public-readable"
-        elif r.status_code == 403:
-            return "exists-not-listable"
-        elif r.status_code == 404:
-            return "not-found"
-        else:
-            return f"unknown-{r.status_code}"
-    except Exception as e:
-        logging.warning(f"Error checking {url}: {e}")
-        return "error"
+# replaced with request_with_retries
 
 def run(shared_data):
+
+    # Fast/Verbose Mode Prompt
+    console.print("\n[bold cyan]Choose Bucket Audit Mode:[/bold cyan]")
+    fast_mode = Prompt.ask("Run in fast mode? (limits checks to 100)", choices=["y", "n"], default="y") == "y"
+    verbose_mode = not fast_mode
     logging.info("Running Public Cloud Bucket Audit (No Credentials)")
     domain = shared_data.get("root_domain", "")
     company = shared_data.get("company_name", "")
@@ -53,9 +68,11 @@ def run(shared_data):
     bucket_names = generate_bucket_candidates(domain, company, subdomains)
 
     results = {}
-    for name in bucket_names:
+    for i, name in enumerate(bucket_names):
+    if fast_mode and i >= 100:
+        break
         result = {
-            "aws": check_bucket_url(f"https://{name}.s3.amazonaws.com"),
+            "aws": request_with_retries(f"https://{name}.s3.amazonaws.com", delay=0.25, verbose=verbose_mode),
             "gcp": check_bucket_url(f"https://storage.googleapis.com/{name}"),
             "azure": check_bucket_url(f"https://{name}.blob.core.windows.net")
         }

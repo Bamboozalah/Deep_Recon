@@ -22,6 +22,15 @@ def run_screenshot_capture(domains):
     return result_paths
 
 def run(shared_data):
+
+    from rich.prompt import Prompt
+    from rich.console import Console
+    import time
+
+    console = Console()
+    console.print("\n[bold cyan]Choose Screenshot Capture Module.Py Mode:[/bold cyan]")
+    fast_mode = Prompt.ask("Run in fast mode? (limits to 100 items)", choices=["y", "n"], default="y") == "y"
+    verbose_mode = not fast_mode
     subdomains = shared_data.get("subdomains") or shared_data.get("cert_domains") or []
     if not subdomains:
         logging.warning("No subdomains available. Consider running Subdomain or Cert modules first.")

@@ -23,6 +23,15 @@ def fetch_wayback_js(domain):
     return js_urls
 
 def run(shared_data):
+
+    from rich.prompt import Prompt
+    from rich.console import Console
+    import time
+
+    console = Console()
+    console.print("\n[bold cyan]Choose Wayback JS Mining Mode:[/bold cyan]")
+    fast_mode = Prompt.ask("Run in fast mode? (limits to 500 JS files)", choices=["y", "n"], default="y") == "y"
+    verbose_mode = not fast_mode
     logging.info("Running Wayback JS Module")
     domain = shared_data.get("root_domain")
     if not domain:

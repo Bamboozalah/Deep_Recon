@@ -11,8 +11,9 @@ def fuzz_paths(domain):
     results = []
     base_url = f"https://{domain}"
 
-    for path in COMMON_PATHS:
-        url = base_url + path
+    for i, path in enumerate(COMMON_PATHS:):        if fast_mode and i >= 200:
+            break        if verbose_mode:
+            time.sleep(0.25)        url = base_url + path
         try:
             r = requests.get(url, timeout=5)
             if r.status_code in [200, 301, 302, 403]:
@@ -23,6 +24,15 @@ def fuzz_paths(domain):
     return results
 
 def run(shared_data):
+
+    from rich.prompt import Prompt
+    from rich.console import Console
+    import time
+
+    console = Console()
+    console.print("\n[bold cyan]Choose Path Fuzzing Module.Py Mode:[/bold cyan]")
+    fast_mode = Prompt.ask("Run in fast mode? (limits to 200 items)", choices=["y", "n"], default="y") == "y"
+    verbose_mode = not fast_mode
     subdomains = shared_data.get("subdomains") or shared_data.get("cert_domains") or []
     if not subdomains:
         logging.warning("No subdomains available. Consider running Subdomain or Cert modules first.")

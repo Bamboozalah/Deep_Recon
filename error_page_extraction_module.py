@@ -20,6 +20,15 @@ def extract_errors(html):
     return list(set(found))
 
 def run(shared_data):
+
+    from rich.prompt import Prompt
+    from rich.console import Console
+    import time
+
+    console = Console()
+    console.print("\n[bold cyan]Choose Error Page Extraction Module.Py Mode:[/bold cyan]")
+    fast_mode = Prompt.ask("Run in fast mode? (limits to 150 items)", choices=["y", "n"], default="y") == "y"
+    verbose_mode = not fast_mode
     subdomains = shared_data.get("subdomains") or shared_data.get("cert_domains") or []
     if not subdomains:
         logging.warning("No subdomains available. Consider running Subdomain or Cert modules first.")

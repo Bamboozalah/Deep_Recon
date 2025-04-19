@@ -26,12 +26,6 @@ from wayback_js_module import run as run_wayback
 
 console = Console()
 
-def debug_shared_data(shared_data):
-    from rich.pretty import pprint
-    console = Console()
-    console.print("\n[bold green]🧠 Shared Data Summary:[/bold green]")
-    pprint(shared_data)
-
 def print_banner():
     banner = """
 ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▓▒▒▒▒▓▒▒▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▒▒▓░░░░░░░░░░░░░░░░░░▒▒▒░░▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▓█▓▓▓▒▒▒▓▓▓▓█▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
@@ -118,6 +112,13 @@ def configure_api_keys():
     console.print("[green]API keys saved to config/api_keys.env[/green]\n")
 
 def recon_menu(shared_data):
+
+    console.print("\n[bold cyan]Global Scan Mode:[/bold cyan]")
+    fast_mode = Prompt.ask("Run all modules in fast mode?", choices=["y", "n"], default="y") == "y"
+    shared_data["fast_mode"] = fast_mode
+    shared_data["verbose_mode"] = not fast_mode
+    if shared_data["verbose_mode"]:
+        console.print("[yellow]⚠️  Verbose mode selected: This scan may take significantly longer.[/yellow]")
     while True:
         console.print("\n[bold magenta]Choose a module to run:[/bold magenta]")
         console.print("1. Subdomain Enumeration")
@@ -149,7 +150,6 @@ def recon_menu(shared_data):
         elif choice == "4":
             run_github(shared_data)
         elif choice == "5":
-        if not shared_data.get("subdomains"): logging.warning("Subdomains missing before Shodan scan.")
             run_shodan(shared_data)
         elif choice == "6":
             run_cloud(shared_data)
@@ -164,7 +164,6 @@ def recon_menu(shared_data):
         elif choice == "11":
             run_buckets(shared_data)
         elif choice == "12":
-        if not shared_data.get("grid_ips"): logging.warning("Grid IPs missing before ICS exposure scan.")
             run_ics(shared_data)
         elif choice == "13":
             run_screens(shared_data)
@@ -183,7 +182,7 @@ def recon_menu(shared_data):
             run_ics(shared_data)
             run_screens(shared_data)
         elif choice == "15":
-            debug_shared_data(shared_data)  # 👀 Debug summary            generate_reports(shared_data)
+            generate_reports(shared_data)
         elif choice == "16":
             configure_api_keys()
         elif choice == "0":
