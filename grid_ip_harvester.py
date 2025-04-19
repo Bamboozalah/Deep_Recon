@@ -3,7 +3,7 @@ import os
 import requests
 import logging
 from dotenv import load_dotenv
-import shodan
+from shodan_utils import shodan_search, shodan_get_asn
 
 load_dotenv(dotenv_path="config/api_keys.env")
 
@@ -20,15 +20,17 @@ def search_asns_by_company(company_name):
         logging.error(f"ASN lookup failed for {company_name}: {e}")
     return []
 
+
 def fetch_subnets_for_asn(asn, api_key):
-    api = shodan.Shodan(api_key)
+    # api initialization removed (using shodan_utils)
     subnets = []
     try:
-        asn_data = api.asn(f"AS{asn}")
+        asn_data = shodan_get_asn(f"AS{asn}")
         subnets = [prefix for prefix in asn_data.get("prefixes", [])]
     except Exception as e:
-        logging.error(f"Failed to get Shodan ASN data: {e}")
+        logging.error(f"Failed to get Shodan ASN data for AS{asn}: {e}")
     return subnets
+
 
 def run(shared_data):
     logging.info("Running Grid IP Harvester...")

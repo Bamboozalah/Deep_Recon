@@ -23,6 +23,10 @@ def get_cert_info(domain, port=443):
         return None
 
 def run(shared_data):
+    try:
+        timeout = int(input("Enter SSL timeout (default 5 seconds): ") or 5)
+    except ValueError:
+        timeout = 5
     logging.info("Running Certificate Data Module")
     subdomains = shared_data.get("subdomains", [])
     results = {}

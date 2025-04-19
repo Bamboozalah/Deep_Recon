@@ -176,6 +176,7 @@ def recon_menu(shared_data):
             run_screens(shared_data)
         elif choice == "14":
             generate_reports(shared_data)
+            print("\n[✔] Reports saved to: output/report.html, .csv, and .json")
         elif choice == "16":
             run_grid_harvest(config, global_target, enrichment_subdomains)
         elif choice == "15":

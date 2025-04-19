@@ -1,5 +1,5 @@
 
-import shodan
+from shodan_utils import shodan_search, shodan_get_asn
 import socket
 import logging
 import os
@@ -24,7 +24,7 @@ def run(shared_data):
         logging.warning("No subdomains found in shared_data.")
         return {}
 
-    api = shodan.Shodan(api_key)
+    # api initialization removed (using shodan_utils)
     results = {}
 
     for host in subdomains:

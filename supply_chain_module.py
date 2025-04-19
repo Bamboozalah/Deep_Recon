@@ -40,3 +40,14 @@ def run(shared_data):
 
     shared_data["supply_chain"] = supply_map
     return supply_map
+
+
+def lookup_vendor_cves(vendor):
+    try:
+        r = requests.get(f"https://cve.circl.lu/api/search/{vendor}", timeout=10)
+        if r.status_code == 200:
+            data = r.json()
+            return [c["id"] for c in data.get("data", [])[:5]]  # Limit to 5 CVEs
+    except Exception as e:
+        logging.warning(f"Failed to fetch CVEs for {vendor}: {e}")
+    return []

@@ -195,3 +195,22 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+def parse_shodan_vulns(match):
+    return list(match.get("vulns", {}).keys()) if "vulns" in match else []
+
+def parse_github_secrets(results):
+    secrets = []
+    for hit in results:
+        if "secret" in hit.get("description", "").lower():
+            secrets.append(hit)
+    return secrets
+
+def compute_risk_score(shodan_vulns=None, github_hits=None):
+    score = 0
+    if shodan_vulns:
+        score += len(shodan_vulns)
+    if github_hits:
+        score += 2 * len(github_hits)
+    return min(score, 10)

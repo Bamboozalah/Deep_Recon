@@ -54,8 +54,23 @@ def run(shared_data):
 
     results = {}
     for name in bucket_names:
-        result = {
-            "aws": check_bucket_url(f"https://{name}.s3.amazonaws.com"),
+        aws_result = check_bucket_url(f"https://{name}.s3.amazonaws.com")
+    gcp_result = check_bucket_url(f"https://storage.googleapis.com/{name}")
+    azure_result = check_bucket_url(f"https://{name}.blob.core.windows.net")
+
+    def severity_level(result): 
+        if "public-readable" in result:
+            return "high"
+        elif "exists-not-listable" in result:
+            return "medium"
+        else:
+            return "info"
+
+    result = {
+        "aws": {"status": aws_result, "severity": severity_level(aws_result)},
+        "gcp": {"status": gcp_result, "severity": severity_level(gcp_result)},
+        "azure": {"status": azure_result, "severity": severity_level(azure_result)}
+    
             "gcp": check_bucket_url(f"https://storage.googleapis.com/{name}"),
             "azure": check_bucket_url(f"https://{name}.blob.core.windows.net")
         }
