@@ -40,7 +40,7 @@ It combines passive data collection, open-source intelligence (OSINT), and optio
 
 ---
 
-##Setup
+## Setup
 
 ```bash
 # Clone the repository
@@ -62,8 +62,8 @@ python3 deep_recon_cli.py
 ```
 ---
 ## You’ll be guided through an interactive menu to:
--Input a domain
--Run specific modules or the full pipeline
--Generate detailed reports
+-  Input a domain
+-  Run specific modules or the full pipeline
+-  Generate detailed reports
 
 
