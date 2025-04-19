@@ -35,7 +35,7 @@ Deep Recon features a centralized **enrichment pipeline** that ensures each modu
 - **Modular independence**: Each module can operate independently but cooperates when part of a pipeline.
 - **Seamless reporting**: Enrichment ensures the final output has consistent, comprehensive intelligence across categories.
 
-This system was designed to support scalable reconnaissance and research workflows and to make it easier for analysts to trace how individual findings connect across layers of exposure.
+This system is designed to support scalable reconnaissance and research workflows and to make it easier for analysts to trace how individual findings connect across layers of exposure.
 
 ---
 
