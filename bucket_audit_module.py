@@ -61,7 +61,7 @@ def run(shared_data):
         }
         results[name] = result
         if "public-readable" in result.values():
-            logging.warning(f" Publicly accessible bucket: {name} => {result}")
+            logging.warning(f"🟢 Publicly accessible bucket: {name} => {result}")
 
     shared_data["bucket_audit"] = results
     return results

@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from rich.console import Console
 from rich.prompt import Prompt
 from reporting_module import generate_reports
+from grid_ip_harvester import run as run_grid_harvest
 
 # Load recon modules (ensure all accept shared_data and return results into it)
 from subdomain_enumeration import run as run_subdomains
@@ -89,7 +90,7 @@ def print_banner():
 ▓▓▓▓▓░    ░░░░░▒▓▓███▒░░░ ░░░░▒▓▓▒░░░░░  ░▓██░░░░▓████▓▓▓▓▓███████▓▓▓▓▓░░░░▓██░ ░░░▓██░░░░░░░░░▒████▒░░░░░  ░▒██▓░░░░░░░░░▓███▓░░░▒█████▓░░░░░▓██████
 ▓▓▓▓▓▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒▒▒▒▓▓▓▓▓▒▒▓▓▓▓▓███▓▓▓▓▓████▓▓▓█████████▓▓▓▓█▓▓▓▓▓███▒▒▓▓▓▓█▓▓▓▓▓▒▓▓▓▓██████▓▒▒▒▒▒▓▓████▓▒▒▒▒▒▓█████▓▓▓▓▓███████▓▓▓▓▓██████
 ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓█▓▓▓▓▓▓██▓▓▓█▓▓▓▓▓███████████████▓▓▒░░░░░░░░░░░▒█████████▓▓███▓████████████████████████████████████████████████████████████████
-"""
+""""
     console.print(banner, style="bold magenta")
 
 def load_api_keys():
@@ -131,6 +132,7 @@ def recon_menu(shared_data):
         console.print("13. Run [bold cyan]ALL[/bold cyan] Modules in Sequence")
         console.print("14. Generate Report")
         console.print("15. Configure API Keys")
+        print("16. Grid IP Harvester")
         console.print("0. Exit")
 
         choice = Prompt.ask("\n[bold yellow]Enter your choice[/bold yellow]", default="0")
@@ -174,6 +176,8 @@ def recon_menu(shared_data):
             run_screens(shared_data)
         elif choice == "14":
             generate_reports(shared_data)
+        elif choice == "16":
+            run_grid_harvest(config, global_target, enrichment_subdomains)
         elif choice == "15":
             configure_api_keys()
         elif choice == "0":

@@ -1,33 +1,51 @@
 
-import shodan
-import logging
 import os
+import requests
+import logging
+from dotenv import load_dotenv
+import shodan
 
-def fetch_grid_related_ips(org=None, asn=None, keywords=None, limit=100):
-    logging.info("Fetching grid-related IPs from Shodan")
+load_dotenv(dotenv_path="config/api_keys.env")
+
+def search_asns_by_company(company_name):
+    logging.info(f"Searching ASNs for company: {company_name}")
+    try:
+        url = f"https://api.bgpview.io/search?query_term={company_name}"
+        r = requests.get(url, timeout=10)
+        if r.status_code == 200:
+            data = r.json()
+            if "asns" in data["data"]:
+                return [asn["asn"] for asn in data["data"]["asns"]]
+    except Exception as e:
+        logging.error(f"ASN lookup failed for {company_name}: {e}")
+    return []
+
+def fetch_subnets_for_asn(asn, api_key):
+    api = shodan.Shodan(api_key)
+    subnets = []
+    try:
+        asn_data = api.asn(f"AS{asn}")
+        subnets = [prefix for prefix in asn_data.get("prefixes", [])]
+    except Exception as e:
+        logging.error(f"Failed to get Shodan ASN data: {e}")
+    return subnets
+
+def run(shared_data):
+    logging.info("Running Grid IP Harvester...")
     api_key = os.getenv("SHODAN_API_KEY")
     if not api_key:
-        logging.error("SHODAN_API_KEY not set in environment variables.")
-        return []
+        logging.error("SHODAN_API_KEY not set. Please configure your API key.")
+        return {}
 
-    api = shodan.Shodan(api_key)
-    query_parts = []
+    company = shared_data.get("company_name", "")
+    asns = search_asns_by_company(company)
+    if not asns:
+        logging.warning(f"No ASNs found for company: {company}")
+        return {}
 
-    if org:
-        query_parts.append(f'org:"{org}"')
-    if asn:
-        query_parts.append(f"asn:{asn}")
-    if keywords:
-        query_parts.extend(keywords)
+    all_subnets = []
+    for asn in asns:
+        all_subnets.extend(fetch_subnets_for_asn(asn, api_key))
 
-    query = " ".join(query_parts) or "Electric Cooperative port:502"
-    logging.info(f"Running Shodan search with query: {query}")
-
-    try:
-        results = api.search(query, limit=limit)
-        ips = list({match["ip_str"] for match in results["matches"] if "ip_str" in match})
-        logging.info(f"Found {len(ips)} unique IPs")
-        return ips
-    except Exception as e:
-        logging.error(f"Error searching Shodan: {e}")
-        return []
+    shared_data["grid_ips"] = all_subnets
+    return all_subnets
