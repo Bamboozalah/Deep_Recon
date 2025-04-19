@@ -1,68 +1,67 @@
 
-import boto3
-from botocore.exceptions import ClientError, EndpointConnectionError
-import logging
 import requests
+import logging
 
-WORD_BANK = ["data", "backup", "dev", "prod", "logs", "config", "files", "api", "nerc", "cip", "assets", "docs", "infra", "creds"]
+DEFAULT_WORDS = [
+    "prod", "dev", "test", "backup", "logs", "assets", "data", "reports", "docs",
+    "vpn", "configs", "internal", "external", "shared", "restricted", "outage",
+    "iot", "archive", "dump", "nerc", "cip", "crew", "admin", "incident", "vpn"
+]
 
-def generate_bucket_candidates(domain):
+def generate_bucket_candidates(domain, company=None, subdomains=None):
     base = domain.split('.')[0]
-    candidates = [f"{base}", f"{domain}"]
-    for word in WORD_BANK:
-        candidates.extend([f"{base}-{word}", f"{word}-{base}", f"{domain}-{word}"])
-    return list(set(candidates))
+    labels = set()
 
-def check_s3_bucket(bucket_name):
-    s3 = boto3.client('s3')
-    try:
-        s3.head_bucket(Bucket=bucket_name)
-        try:
-            result = s3.list_objects_v2(Bucket=bucket_name, MaxKeys=1)
-            return {"provider": "AWS", "accessible": True, "listable": bool(result.get("Contents"))}
-        except ClientError:
-            return {"provider": "AWS", "accessible": True, "listable": False}
-    except (ClientError, EndpointConnectionError):
-        return {"provider": "AWS", "accessible": False, "listable": False}
+    if subdomains:
+        for sub in subdomains:
+            label = sub.split('.')[0]
+            labels.add(label.lower())
 
-def check_gcp_bucket(bucket_name):
-    url = f"https://storage.googleapis.com/{bucket_name}"
-    try:
-        r = requests.get(url, timeout=5)
-        if r.status_code in [200, 403]:
-            return {"provider": "GCP", "accessible": True, "status_code": r.status_code}
-    except Exception as e:
-        logging.debug(f"GCP check error for {bucket_name}: {e}")
-    return {"provider": "GCP", "accessible": False}
+    parts = [base, domain, company] if company else [base, domain]
+    parts.extend(labels)
+    parts = set(filter(None, parts))
 
-def check_azure_blob(bucket_name):
-    # Anonymous access attempt to container root
-    url = f"https://{bucket_name}.blob.core.windows.net/?restype=container&comp=list"
+    candidates = set()
+    for word in DEFAULT_WORDS:
+        for base in parts:
+            candidates.add(f"{base}-{word}")
+            candidates.add(f"{word}-{base}")
+            candidates.add(base)
+    return sorted(candidates)
+
+def check_bucket_url(url):
     try:
         r = requests.get(url, timeout=5)
-        if r.status_code in [200, 403]:
-            return {"provider": "Azure", "accessible": True, "status_code": r.status_code}
+        if r.status_code == 200:
+            return "public-readable"
+        elif r.status_code == 403:
+            return "exists-not-listable"
+        elif r.status_code == 404:
+            return "not-found"
+        else:
+            return f"unknown-{r.status_code}"
     except Exception as e:
-        logging.debug(f"Azure check error for {bucket_name}: {e}")
-    return {"provider": "Azure", "accessible": False}
+        logging.warning(f"Error checking {url}: {e}")
+        return "error"
 
 def run(shared_data):
-    logging.info("Running Multi-Cloud Bucket Audit Module")
-    domain = shared_data.get("root_domain")
-    if not domain:
-        logging.warning("No root_domain provided.")
-        return {}
+    logging.info("Running Public Cloud Bucket Audit (No Credentials)")
+    domain = shared_data.get("root_domain", "")
+    company = shared_data.get("company_name", "")
+    subdomains = shared_data.get("subdomains", [])
 
-    candidates = generate_bucket_candidates(domain)
+    bucket_names = generate_bucket_candidates(domain, company, subdomains)
+
     results = {}
-
-    for name in candidates:
-        results[name] = {
-            "aws": check_s3_bucket(name),
-            "gcp": check_gcp_bucket(name),
-            "azure": check_azure_blob(name)
+    for name in bucket_names:
+        result = {
+            "aws": check_bucket_url(f"https://{name}.s3.amazonaws.com"),
+            "gcp": check_bucket_url(f"https://storage.googleapis.com/{name}"),
+            "azure": check_bucket_url(f"https://{name}.blob.core.windows.net")
         }
-        logging.info(f"Checked {name}: {results[name]}")
+        results[name] = result
+        if "public-readable" in result.values():
+            logging.warning(f" Publicly accessible bucket: {name} => {result}")
 
     shared_data["bucket_audit"] = results
     return results
