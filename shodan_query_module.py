@@ -11,6 +11,8 @@ def resolve_to_ip(hostname):
         logging.warning(f"Could not resolve {hostname} to IP: {e}")
         return None
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
 def run(shared_data):
     logging.info("Running Shodan Query Module")
 

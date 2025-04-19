@@ -22,6 +22,8 @@ def fuzz_paths(domain):
             logging.debug(f"Request to {url} failed: {e}")
     return results
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
 def run(shared_data):
     logging.info("Running Path Fuzzing Module")
     subdomains = shared_data.get("subdomains", [])

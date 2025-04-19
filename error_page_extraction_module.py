@@ -19,6 +19,8 @@ def extract_errors(html):
         found.extend(matches)
     return list(set(found))
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
 def run(shared_data):
     logging.info("Running Error Page Extraction Module")
     subdomains = shared_data.get("subdomains", [])

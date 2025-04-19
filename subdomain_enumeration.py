@@ -25,6 +25,8 @@ def run_subdomain_enumeration(domain, tool='subfinder'):
         logging.error(f"Exception during subdomain enumeration for {domain}: {e}")
         return []
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
 def run(shared_data):
     logging.info("Running Subdomain Enumeration Module")
     root_domain = shared_data.get("root_domain")

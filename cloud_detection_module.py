@@ -21,6 +21,8 @@ def detect_cloud_from_headers(headers):
                 stack.append(cloud)
     return list(set(stack))
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
 def run(shared_data):
     logging.info("Running Cloud Detection Module")
 

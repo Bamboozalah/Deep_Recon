@@ -17,6 +17,8 @@ def extract_third_party_domains(html, base_url):
                 domains.add(domain)
     return list(domains)
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
 def run(shared_data):
     logging.info("Running Supply Chain Module")
     subdomains = shared_data.get("subdomains", [])

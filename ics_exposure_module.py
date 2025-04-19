@@ -6,6 +6,8 @@ from shodan_utils import shodan_search, shodan_get_asn
 
 load_dotenv(dotenv_path="config/api_keys.env")
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
 def run(shared_data):
     logging.info("Running ICS Exposure Detection Module...")
     api_key = os.getenv("SHODAN_API_KEY")

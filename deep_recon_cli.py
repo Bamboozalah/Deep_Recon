@@ -140,7 +140,7 @@ def recon_menu(shared_data):
         if choice == "1":
             run_subdomains(shared_data)
         elif choice == "2":
-            run_cert(shared_data)
+            
         elif choice == "3":
             run_github(shared_data)
         elif choice == "4":

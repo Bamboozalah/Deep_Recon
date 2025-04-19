@@ -44,6 +44,8 @@ def check_bucket_url(url):
         logging.warning(f"Error checking {url}: {e}")
         return "error"
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
 def run(shared_data):
     logging.info("Running Public Cloud Bucket Audit (No Credentials)")
     domain = shared_data.get("root_domain", "")

@@ -32,6 +32,8 @@ def fetch_subnets_for_asn(asn, api_key):
     return subnets
 
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
 def run(shared_data):
     logging.info("Running Grid IP Harvester...")
     api_key = os.getenv("SHODAN_API_KEY")
