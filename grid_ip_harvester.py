@@ -1,8 +1,10 @@
+from utils import get_api_key
+def get_api_key(key):
+    return os.getenv(key)
+
 
 from shodan_utils import shodan_search, shodan_get_asn
 import logging
-from dotenv import load_dotenv
-load_dotenv(dotenv_path='config/api_keys.env')
 
 def run(shared_data):
     company = shared_data.get("company_name", "").strip()

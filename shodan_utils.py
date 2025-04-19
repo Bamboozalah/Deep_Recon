@@ -1,14 +1,15 @@
-load_dotenv(dotenv_path='config/api_keys.env')
+from utils import get_api_key
+def get_api_key(key):
+    return os.getenv(key)
+
 
 import os
 import logging
-from dotenv import load_dotenv
 import shodan
 
-load_dotenv(dotenv_path="config/api_keys.env")
 
 def get_api():
-    api_key = os.getenv("SHODAN_API_KEY")
+    api_key = get_api_key("SHODAN_API_KEY")
     if not api_key:
         logging.error("SHODAN_API_KEY not found in environment.")
         return None

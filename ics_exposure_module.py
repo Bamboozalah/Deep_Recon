@@ -1,3 +1,7 @@
+from utils import get_api_key
+def get_api_key(key):
+    return os.getenv(key)
+
 
 import shodan
 import socket
@@ -42,7 +46,7 @@ def assign_risk_score(port, vulns):
 def run(shared_data):
     logging.info("Running ICS Exposure Module with risk scoring")
 
-    api_key = os.getenv("SHODAN_API_KEY")
+    api_key = get_api_key("SHODAN_API_KEY")
     if not api_key:
         logging.error("SHODAN_API_KEY not set in environment variables.")
         return {}

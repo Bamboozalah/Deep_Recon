@@ -1,3 +1,4 @@
+from utils import get_api_key
 
 #!/usr/bin/env python3
 import os
@@ -90,7 +91,6 @@ def print_banner():
     console.print(banner, style="bold magenta")
 
 def load_api_keys():
-    load_dotenv(dotenv_path="config/api_keys.env")
     keys = {
         "SHODAN_API_KEY": os.getenv("SHODAN_API_KEY", ""),
         "GITHUB_TOKEN": os.getenv("GITHUB_TOKEN", "")
