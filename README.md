@@ -1,6 +1,6 @@
-# Deep Recon — Grid Intelligence & Exposure Reconnaissance Toolkit
+# Deep_Recon — Grid Intelligence & Exposure Reconnaissance Toolkit
 
-**Deep Recon** is a modular, CLI-driven reconnaissance framework designed to assist security researchers and analysts in mapping external exposure of internet-connected infrastructure, with a focus on energy, utilities, and critical sectors.
+**Deep_Recon** is a modular, CLI-driven reconnaissance framework designed to assist security researchers and analysts in mapping external exposure of internet-connected infrastructure, with a focus on energy, utilities, and critical sectors.
 
 It combines passive data collection, open-source intelligence (OSINT), and optional third-party API integrations to support responsible threat analysis, technical discovery, and reporting.
 
@@ -16,6 +16,26 @@ It combines passive data collection, open-source intelligence (OSINT), and optio
 -  Supply chain mapping via third-party domain analysis
 -  Visual screenshots of exposed services
 -  HTML, CSV, and JSON reporting with summaries and severity filters
+
+---
+
+## Enrichment Framework
+
+Deep Recon features a centralized **enrichment pipeline** that ensures each module can contribute to and benefit from shared intelligence throughout a recon session.
+
+#### How It Works
+
+- Modules like **Subdomain Enumeration**, **Certificate Analysis**, and **Grid IP Harvester** populate foundational information (e.g., domains, IPs, ASNs).
+- Follow-on modules such as **Shodan Queries**, **ICS Exposure Checks**, and **Cloud Detection** automatically consume this enrichment.
+- Data collection is restricted to once per session and reused where needed, minimizing redundant queries and improving performance.
+
+#### Benefits
+
+- **Context-aware scans**: Modules are more intelligent when they are aware of what has already been discovered.
+- **Modular independence**: Each module can operate independently but cooperates when part of a pipeline.
+- **Seamless reporting**: Enrichment ensures the final output has consistent, comprehensive intelligence across categories.
+
+This system was designed to support scalable reconnaissance and research workflows and to make it easier for analysts to trace how individual findings connect across layers of exposure.
 
 ---
 
