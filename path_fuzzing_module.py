@@ -11,11 +11,12 @@ def fuzz_paths(domain):
     results = []
     base_url = f"https://{domain}"
 
-    for i, path in enumerate(COMMON_PATHS):):        if fast_mode and i >= 200:
-            break        if verbose_mode:
-            time.sleep(0.25)        url = base_url + path
-        try:
-            r = requests.get(url, timeout=5)
+    for i, path in enumerate(COMMON_PATHS):
+        if fast_mode and i >= 200:
+            break
+        if verbose_mode:
+            time.sleep(0.25)
+        url = base_url + path
             if r.status_code in [200, 301, 302, 403]:
                 results.append({"path": path, "status": r.status_code})
                 logging.info(f"{domain}{path} -> {r.status_code}")
