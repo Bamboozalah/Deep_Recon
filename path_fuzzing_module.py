@@ -17,10 +17,15 @@ def fuzz_paths(domain):
         if verbose_mode:
             time.sleep(0.25)
         url = base_url + path
-        if r.status_code in [200, 301, 302, 403]:
-            results.append({"path": path, "status": r.status_code})
-            logging.info(f"{domain}{path} -> {r.status_code}")
+        try:
+            response = requests.get(url, timeout=3)
+            if response.status_code in [200, 403]:
+                results.append((url, response.status_code))
         except requests.RequestException as e:
+            logging.warning(f"Request to {url} failed: {e}")
+            if r.status_code in [200, 301, 302, 403]:
+                results.append({"path": path, "status": r.status_code})
+                logging.info(f"{domain}{path} -> {r.status_code}")
             logging.debug(f"Request to {url} failed: {e}")
     return results
 
