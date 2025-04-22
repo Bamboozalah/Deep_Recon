@@ -1,4 +1,3 @@
-
 import os
 import json
 import csv
@@ -7,15 +6,15 @@ from datetime import datetime
 from pathlib import Path
 from jinja2 import Template
 
-def save_json_report(data, output_dir):
-    with open(base_path + ".json", "w") as f:
+def save_json_report(data, base_path):
+    out_path = base_path + ".json"
     with open(out_path, "w") as f:
         json.dump(data, f, indent=2)
     logging.info(f"Saved JSON report to {out_path}")
     return out_path
 
-def save_csv_report(data, output_dir):
-    with open(base_path + ".csv", "w") as f:
+def save_csv_report(data, base_path):
+    out_path = base_path + ".csv"
     with open(out_path, "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["Module", "Key", "Field", "Value"])
@@ -41,7 +40,8 @@ def save_csv_report(data, output_dir):
     logging.info(f"Saved CSV report to {out_path}")
     return out_path
 
-def save_html_report(data, output_dir):
+def save_html_report(data, base_path):
+    out_path = base_path + ".html"
     html_template = """
     <!DOCTYPE html>
     <html>
@@ -109,23 +109,20 @@ def save_html_report(data, output_dir):
     """
     template = Template(html_template)
     rendered = template.render(data=data)
-    with open(base_path + ".html", "w") as f:
     with open(out_path, "w") as f:
         f.write(rendered)
     logging.info(f"Saved HTML report to {out_path}")
     return out_path
 
 def generate_reports(shared_data, output_dir="output"):
-    import os
-    from datetime import datetime
-    os.makedirs("output", exist_ok=True)
+    os.makedirs(output_dir, exist_ok=True)
     base = shared_data.get("report_filename", "deep_recon_report")
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    base_path = f"output/{base}_{timestamp}"
-    Path(output_dir).mkdir(parents=True, exist_ok=True)
+    base_path = os.path.join(output_dir, f"{base}_{timestamp}")
+
     paths = {
-        "html": save_html_report(shared_data, output_dir),
-        "csv": save_csv_report(shared_data, output_dir),
-        "json": save_json_report(shared_data, output_dir)
+        "html": save_html_report(shared_data, base_path),
+        "csv": save_csv_report(shared_data, base_path),
+        "json": save_json_report(shared_data, base_path)
     }
     return paths
