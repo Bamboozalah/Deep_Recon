@@ -157,7 +157,7 @@ def recon_menu(shared_data):
         if choice == "1":
             run_subdomains(shared_data)
         elif choice == "2":
-        console.print(f"[cyan]Starting module {choice}...[/cyan]")
+            console.print(f"[cyan]Starting module {choice}...[/cyan]")
         try:
             # Module runs below will be nested in this block
             run_cert(shared_data)
@@ -168,7 +168,7 @@ def recon_menu(shared_data):
         elif choice == "3":
             run_grid_harvest(shared_data)
         elif choice == "4":
-        console.print(f"[cyan]Starting module {choice}...[/cyan]")
+            console.print(f"[cyan]Starting module {choice}...[/cyan]")
         try:
             # Module runs below will be nested in this block
             run_github(shared_data)
@@ -179,7 +179,7 @@ def recon_menu(shared_data):
         elif choice == "5":
             run_shodan(shared_data)
         elif choice == "6":
-        console.print(f"[cyan]Starting module {choice}...[/cyan]")
+            console.print(f"[cyan]Starting module {choice}...[/cyan]")
         try:
             # Module runs below will be nested in this block
             run_cloud(shared_data)
@@ -190,7 +190,7 @@ def recon_menu(shared_data):
         elif choice == "7":
             run_wayback(shared_data)
         elif choice == "8":
-        console.print(f"[cyan]Starting module {choice}...[/cyan]")
+            console.print(f"[cyan]Starting module {choice}...[/cyan]")
         try:
             # Module runs below will be nested in this block
             run_errors(shared_data)
@@ -201,7 +201,7 @@ def recon_menu(shared_data):
         elif choice == "9":
             run_paths(shared_data)
         elif choice == "10":
-        console.print(f"[cyan]Starting module {choice}...[/cyan]")
+            console.print(f"[cyan]Starting module {choice}...[/cyan]")
         try:
             # Module runs below will be nested in this block
             run_supply(shared_data)
@@ -212,7 +212,7 @@ def recon_menu(shared_data):
         elif choice == "11":
             run_buckets(shared_data)
         elif choice == "12":
-        console.print(f"[cyan]Starting module {choice}...[/cyan]")
+            console.print(f"[cyan]Starting module {choice}...[/cyan]")
         try:
             # Module runs below will be nested in this block
             run_ics(shared_data)
@@ -223,7 +223,7 @@ def recon_menu(shared_data):
         elif choice == "13":
             run_screens(shared_data)
         elif choice == "14":
-        console.print(f"[cyan]Starting module {choice}...[/cyan]")
+            console.print(f"[cyan]Starting module {choice}...[/cyan]")
         try:
             # Module runs below will be nested in this block
             run_subdomains(shared_data)
@@ -246,7 +246,7 @@ def recon_menu(shared_data):
         elif choice == "15":
             generate_reports(shared_data)
         elif choice == "16":
-        console.print(f"[cyan]Starting module {choice}...[/cyan]")
+            console.print(f"[cyan]Starting module {choice}...[/cyan]")
         try:
             # Module runs below will be nested in this block
             configure_api_keys()
