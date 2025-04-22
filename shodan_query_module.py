@@ -1,11 +1,10 @@
-from utils import get_api_key
-def get_api_key(key):
-
-
 import shodan
 import socket
 import logging
 import os
+from utils import get_api_key
+def get_api_key(key):
+
 
 def resolve_to_ip(hostname):
     try:
