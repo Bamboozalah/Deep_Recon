@@ -1,5 +1,4 @@
 from utils import get_api_key
-return os.getenv(key)
 import shodan
 import socket
 import logging
