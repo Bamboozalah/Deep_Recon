@@ -1,5 +1,5 @@
 from utils import get_api_key
-def get_api_key(key):
+    def get_api_key(key):
 
 
 import requests
