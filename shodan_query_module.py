@@ -1,6 +1,5 @@
 from utils import get_api_key
 def get_api_key(key):
-    return os.getenv(key)
 
 
 import shodan
@@ -18,9 +17,7 @@ def resolve_to_ip(hostname):
 def run(shared_data):
     logging.info("Running Shodan Query Module")
 
-    api_key = get_api_key("SHODAN_API_KEY")
     if not api_key:
-        logging.error("SHODAN_API_KEY not set in environment variables.")
         return {}
 
     subdomains = shared_data.get("subdomains", [])
