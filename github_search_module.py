@@ -1,12 +1,7 @@
 import requests
 import logging
 import os
-
-
-from utils import get_api_key
-def get_api_key(key):
-
-
+from utils import get_api_key  
 
 def github_search(domain, token=None):
     query = f'"{domain}"'
@@ -37,6 +32,7 @@ def run(shared_data):
         logging.warning("No root_domain found in shared_data")
         return []
 
+    token = get_api_key("GITHUB_TOKEN")  
     results = github_search(domain, token=token)
     shared_data["github_leaks"] = results
     return results
