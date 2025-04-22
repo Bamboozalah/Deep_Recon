@@ -2,7 +2,7 @@ import shodan
 import socket
 import logging
 import os
-from utils import get_api_key  # ✅ Correct import
+from utils import get_api_key  
 
 def resolve_to_ip(hostname):
     try:
@@ -14,7 +14,7 @@ def resolve_to_ip(hostname):
 def run(shared_data):
     logging.info("Running Shodan Query Module")
 
-    api_key = get_api_key("SHODAN_API_KEY")  # ✅ Define it before use
+    api_key = get_api_key("SHODAN_API_KEY")  
     if not api_key:
         logging.error("No SHODAN_API_KEY found.")
         return {}
