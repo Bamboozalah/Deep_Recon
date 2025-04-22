@@ -139,37 +139,93 @@ def recon_menu(shared_data):
         console.print("14. Run [bold cyan]ALL[/bold cyan] Modules in Sequence")
         console.print("15. Generate Report")
         console.print("16. Configure API Keys")
+        console.print("17. Edit Target Info")
         console.print("0. Exit")
 
         choice = Prompt.ask("\n[bold yellow]Enter your choice[/bold yellow]", default="0")
 
+        if choice == "17":
+            console.print("[bold cyan]\nEdit Target Information[/bold cyan]")
+            shared_data["root_domain"] = Prompt.ask("Target domain", default=shared_data.get("root_domain", ""))
+            shared_data["company_name"] = Prompt.ask("Company name", default=shared_data.get("company_name", ""))
+            shared_data["organization_name"] = Prompt.ask("Organization name", default=shared_data.get("organization_name", ""))
+            shared_data["origin_registrant"] = Prompt.ask("Origin registrant", default=shared_data.get("origin_registrant", ""))
+            shared_data["prefix_registrant"] = Prompt.ask("Prefix registrant", default=shared_data.get("prefix_registrant", ""))
+            console.print("[green]Target info updated.[/green]\n")
+            continue
+
         if choice == "1":
             run_subdomains(shared_data)
         elif choice == "2":
+        console.print(f"[cyan]Starting module {choice}...[/cyan]")
+        try:
+            # Module runs below will be nested in this block
             run_cert(shared_data)
+        except Exception as e:
+            console.print(f"[red]Error running module {choice}: {e}[/red]")
+        else:
+            console.print(f"[green]Module {choice} completed and data saved to shared_data.[/green]\n")
         elif choice == "3":
             run_grid_harvest(shared_data)
         elif choice == "4":
+        console.print(f"[cyan]Starting module {choice}...[/cyan]")
+        try:
+            # Module runs below will be nested in this block
             run_github(shared_data)
+        except Exception as e:
+            console.print(f"[red]Error running module {choice}: {e}[/red]")
+        else:
+            console.print(f"[green]Module {choice} completed and data saved to shared_data.[/green]\n")
         elif choice == "5":
             run_shodan(shared_data)
         elif choice == "6":
+        console.print(f"[cyan]Starting module {choice}...[/cyan]")
+        try:
+            # Module runs below will be nested in this block
             run_cloud(shared_data)
+        except Exception as e:
+            console.print(f"[red]Error running module {choice}: {e}[/red]")
+        else:
+            console.print(f"[green]Module {choice} completed and data saved to shared_data.[/green]\n")
         elif choice == "7":
             run_wayback(shared_data)
         elif choice == "8":
+        console.print(f"[cyan]Starting module {choice}...[/cyan]")
+        try:
+            # Module runs below will be nested in this block
             run_errors(shared_data)
+        except Exception as e:
+            console.print(f"[red]Error running module {choice}: {e}[/red]")
+        else:
+            console.print(f"[green]Module {choice} completed and data saved to shared_data.[/green]\n")
         elif choice == "9":
             run_paths(shared_data)
         elif choice == "10":
+        console.print(f"[cyan]Starting module {choice}...[/cyan]")
+        try:
+            # Module runs below will be nested in this block
             run_supply(shared_data)
+        except Exception as e:
+            console.print(f"[red]Error running module {choice}: {e}[/red]")
+        else:
+            console.print(f"[green]Module {choice} completed and data saved to shared_data.[/green]\n")
         elif choice == "11":
             run_buckets(shared_data)
         elif choice == "12":
+        console.print(f"[cyan]Starting module {choice}...[/cyan]")
+        try:
+            # Module runs below will be nested in this block
             run_ics(shared_data)
+        except Exception as e:
+            console.print(f"[red]Error running module {choice}: {e}[/red]")
+        else:
+            console.print(f"[green]Module {choice} completed and data saved to shared_data.[/green]\n")
         elif choice == "13":
             run_screens(shared_data)
         elif choice == "14":
+        console.print(f"[cyan]Starting module {choice}...[/cyan]")
+        try:
+            # Module runs below will be nested in this block
             run_subdomains(shared_data)
             run_cert(shared_data)
             run_grid_harvest(shared_data)
@@ -183,10 +239,36 @@ def recon_menu(shared_data):
             run_buckets(shared_data)
             run_ics(shared_data)
             run_screens(shared_data)
+        except Exception as e:
+            console.print(f"[red]Error running module {choice}: {e}[/red]")
+        else:
+            console.print(f"[green]Module {choice} completed and data saved to shared_data.[/green]\n")
         elif choice == "15":
             generate_reports(shared_data)
         elif choice == "16":
+        console.print(f"[cyan]Starting module {choice}...[/cyan]")
+        try:
+            # Module runs below will be nested in this block
             configure_api_keys()
+        except Exception as e:
+            console.print(f"[red]Error running module {choice}: {e}[/red]")
+        else:
+            console.print(f"[green]Module {choice} completed and data saved to shared_data.[/green]\n")
+        
+        elif choice == "18":
+            from pathlib import Path
+            reports = sorted(Path("output").glob("*.html"))
+            if not reports:
+                console.print("[red]No reports found in output/[/red]")
+            else:
+                console.print("[cyan]Available reports:[/cyan]")
+                for i, rpt in enumerate(reports, 1):
+                    console.print(f"{i}. {rpt.name}")
+                idx = Prompt.ask("Select report to preview (or 0 to cancel)", default="0")
+                if idx.isdigit() and 1 <= int(idx) <= len(reports):
+                    selected = reports[int(idx)-1]
+                    console.print(f"[green]Selected:[/green] {selected.resolve()}")
+
         elif choice == "0":
             console.print("\n[bold red]Exiting Deep Recon.[/bold red]")
             break
@@ -194,16 +276,3 @@ def recon_menu(shared_data):
             console.print("[red]Invalid choice.[/red]")
 
 def main():
-    print_banner()
-    configure = Prompt.ask("Would you like to configure API keys first?", choices=["y", "n"], default="y")
-    if configure.lower() == "y":
-        configure_api_keys()
-
-    shared_data = {}
-    shared_data["root_domain"] = Prompt.ask("\n[bold cyan]Enter root domain to investigate[/bold cyan]").strip()
-    shared_data["company_name"] = Prompt.ask("Enter company name or keyword for ASN/infra searches (optional)", default="").strip()
-
-    recon_menu(shared_data)
-
-if __name__ == "__main__":
-    main()
