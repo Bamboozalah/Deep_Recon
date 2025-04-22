@@ -38,3 +38,13 @@ def run_subdomain_enumeration(domain, tool='subfinder'):
         except Exception as e:
             logging.error(f"Assetfinder exception for {domain}: {e}")
             return []
+def run(shared_data):
+    logging.info("Running Subdomain Enumeration Module")
+    root_domain = shared_data.get("root_domain")
+    if not root_domain:
+        logging.error("No root domain provided in shared_data['root_domain']")
+        return []
+
+    subdomains = run_subdomain_enumeration(root_domain)
+    shared_data["subdomains"] = subdomains
+    return subdomains
