@@ -1,10 +1,12 @@
-from utils import get_api_key
-    def get_api_key(key):
-
-
 import requests
 import logging
 import os
+
+
+from utils import get_api_key
+def get_api_key(key):
+
+
 
 def github_search(domain, token=None):
     query = f'"{domain}"'
