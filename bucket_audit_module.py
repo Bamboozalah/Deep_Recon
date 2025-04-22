@@ -69,7 +69,7 @@ def run(shared_data):
 
     results = {}
     for i, name in enumerate(bucket_names):
-    if fast_mode and i >= 100:
+        if fast_mode and i >= 100:
         break
         result = {
             "aws": request_with_retries(f"https://{name}.s3.amazonaws.com", delay=0.25, verbose=verbose_mode),
