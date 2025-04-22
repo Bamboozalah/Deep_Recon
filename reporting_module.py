@@ -8,14 +8,14 @@ from pathlib import Path
 from jinja2 import Template
 
 def save_json_report(data, output_dir):
-    out_path = os.path.join(output_dir, "report.json")
+    with open(base_path + ".json", "w") as f:
     with open(out_path, "w") as f:
         json.dump(data, f, indent=2)
     logging.info(f"Saved JSON report to {out_path}")
     return out_path
 
 def save_csv_report(data, output_dir):
-    out_path = os.path.join(output_dir, "report.csv")
+    with open(base_path + ".csv", "w") as f:
     with open(out_path, "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["Module", "Key", "Field", "Value"])
@@ -109,13 +109,19 @@ def save_html_report(data, output_dir):
     """
     template = Template(html_template)
     rendered = template.render(data=data)
-    out_path = os.path.join(output_dir, "report.html")
+    with open(base_path + ".html", "w") as f:
     with open(out_path, "w") as f:
         f.write(rendered)
     logging.info(f"Saved HTML report to {out_path}")
     return out_path
 
 def generate_reports(shared_data, output_dir="output"):
+    import os
+    from datetime import datetime
+    os.makedirs("output", exist_ok=True)
+    base = shared_data.get("report_filename", "deep_recon_report")
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    base_path = f"output/{base}_{timestamp}"
     Path(output_dir).mkdir(parents=True, exist_ok=True)
     paths = {
         "html": save_html_report(shared_data, output_dir),
