@@ -91,13 +91,6 @@ def print_banner():
 """
     console.print(banner, style="bold magenta")
 
-def load_api_keys():
-    keys = {
-        "SHODAN_API_KEY": os.getenv("SHODAN_API_KEY", ""),
-        "GITHUB_TOKEN": os.getenv("GITHUB_TOKEN", "")
-    }
-    return keys
-
 def configure_api_keys():
     os.makedirs("config", exist_ok=True)
     key_path = "config/api_keys.env"
@@ -111,164 +104,95 @@ def configure_api_keys():
             f.write(f"GITHUB_TOKEN={github_key}\n")
     console.print("[green]API keys saved to config/api_keys.env[/green]\n")
 
-def recon_menu(shared_data):
+def run_module(name, func, shared_data):
+    console.print(f"[cyan]Starting {name}...[/cyan]")
+    try:
+        func(shared_data)
+    except Exception as e:
+        console.print(f"[red]Error in {name}: {e}[/red]")
+    else:
+        console.print(f"[green]{name} complete. Results saved to shared_data.[/green]")
 
-    console.print("\n[bold cyan]Global Scan Mode:[/bold cyan]")
+def recon_menu(shared_data):
     fast_mode = Prompt.ask("Run all modules in fast mode by default?", choices=["y", "n"], default="y") == "y"
-    if shared_data["fast_mode"]:
-        console.print("[green]Fast mode selected: Valuable findings may be incomplete or omitted due to limited depth, throttling, and iteration caps.[/green]")
     shared_data["fast_mode"] = fast_mode
     shared_data["verbose_mode"] = not fast_mode
-    if shared_data["verbose_mode"]:
-        console.print("[yellow]Verbose mode selected: This scan may take significantly longer.[/yellow]")
+    if fast_mode:
+        console.print("[green]Fast mode selected: Valuable findings may be incomplete or omitted.[/green]")
+    else:
+        console.print("[yellow]Verbose mode selected: This may take longer.[/yellow]")
+
     while True:
         console.print("\n[bold magenta]Choose a module to run:[/bold magenta]")
-        console.print("1. Subdomain Enumeration")
-        console.print("2. Certificate Analysis")
-        console.print("3. Grid IP Harvester")
-        console.print("4. GitHub Search")
-        console.print("5. Shodan Scan")
-        console.print("6. Cloud Fingerprint Detection")
-        console.print("7. Wayback JS + Vulnerabilities")
-        console.print("8. Error Page Extraction")
-        console.print("9. Path Fuzzing")
-        console.print("10. Supply Chain Analysis")
-        console.print("11. Cloud Bucket Audit")
-        console.print("12. ICS Exposure Detection")
-        console.print("13. Screenshot Capture")
-        console.print("14. Run [bold cyan]ALL[/bold cyan] Modules in Sequence")
-        console.print("15. Generate Report")
-        console.print("16. Configure API Keys")
-        console.print("17. Edit Target Info")
+        for i, name in enumerate([
+            "Subdomain Enumeration", "Certificate Analysis", "Grid IP Harvester",
+            "GitHub Search", "Shodan Scan", "Cloud Fingerprint Detection",
+            "Wayback JS + Vulnerabilities", "Error Page Extraction", "Path Fuzzing",
+            "Supply Chain Analysis", "Cloud Bucket Audit", "ICS Exposure Detection",
+            "Screenshot Capture", "Run ALL Modules in Sequence", "Generate Report",
+            "Configure API Keys", "Edit Target Info", "View Previous Reports"
+        ], 1):
+            console.print(f"{i}. {name}")
         console.print("0. Exit")
 
         choice = Prompt.ask("\n[bold yellow]Enter your choice[/bold yellow]", default="0")
 
-        if choice == "17":
-            console.print("[bold cyan]\nEdit Target Information[/bold cyan]")
-            shared_data["root_domain"] = Prompt.ask("Target domain", default=shared_data.get("root_domain", ""))
-            shared_data["company_name"] = Prompt.ask("Company name", default=shared_data.get("company_name", ""))
-            shared_data["organization_name"] = Prompt.ask("Organization name", default=shared_data.get("organization_name", ""))
-            shared_data["origin_registrant"] = Prompt.ask("Origin registrant", default=shared_data.get("origin_registrant", ""))
-            shared_data["prefix_registrant"] = Prompt.ask("Prefix registrant", default=shared_data.get("prefix_registrant", ""))
-            console.print("[green]Target info updated.[/green]\n")
-            continue
-
         if choice == "1":
-            run_subdomains(shared_data)
+            run_module("Subdomain Enumeration", run_subdomains, shared_data)
         elif choice == "2":
-            console.print(f"[cyan]Starting module {choice}...[/cyan]")
-        try:
-            # Module runs below will be nested in this block
-            run_cert(shared_data)
-        except Exception as e:
-            console.print(f"[red]Error running module {choice}: {e}[/red]")
-        else:
-            console.print(f"[green]Module {choice} completed and data saved to shared_data.[/green]\n")
+            run_module("Certificate Analysis", run_cert, shared_data)
         elif choice == "3":
-            run_grid_harvest(shared_data)
+            run_module("Grid IP Harvester", run_grid_harvest, shared_data)
         elif choice == "4":
-            console.print(f"[cyan]Starting module {choice}...[/cyan]")
-        try:
-            # Module runs below will be nested in this block
-            run_github(shared_data)
-        except Exception as e:
-            console.print(f"[red]Error running module {choice}: {e}[/red]")
-        else:
-            console.print(f"[green]Module {choice} completed and data saved to shared_data.[/green]\n")
+            run_module("GitHub Search", run_github, shared_data)
         elif choice == "5":
-            run_shodan(shared_data)
+            run_module("Shodan Scan", run_shodan, shared_data)
         elif choice == "6":
-            console.print(f"[cyan]Starting module {choice}...[/cyan]")
-        try:
-            # Module runs below will be nested in this block
-            run_cloud(shared_data)
-        except Exception as e:
-            console.print(f"[red]Error running module {choice}: {e}[/red]")
-        else:
-            console.print(f"[green]Module {choice} completed and data saved to shared_data.[/green]\n")
+            run_module("Cloud Detection", run_cloud, shared_data)
         elif choice == "7":
-            run_wayback(shared_data)
+            run_module("Wayback JS", run_wayback, shared_data)
         elif choice == "8":
-            console.print(f"[cyan]Starting module {choice}...[/cyan]")
-        try:
-            # Module runs below will be nested in this block
-            run_errors(shared_data)
-        except Exception as e:
-            console.print(f"[red]Error running module {choice}: {e}[/red]")
-        else:
-            console.print(f"[green]Module {choice} completed and data saved to shared_data.[/green]\n")
+            run_module("Error Page Extraction", run_errors, shared_data)
         elif choice == "9":
-            run_paths(shared_data)
+            run_module("Path Fuzzing", run_paths, shared_data)
         elif choice == "10":
-            console.print(f"[cyan]Starting module {choice}...[/cyan]")
-        try:
-            # Module runs below will be nested in this block
-            run_supply(shared_data)
-        except Exception as e:
-            console.print(f"[red]Error running module {choice}: {e}[/red]")
-        else:
-            console.print(f"[green]Module {choice} completed and data saved to shared_data.[/green]\n")
+            run_module("Supply Chain Analysis", run_supply, shared_data)
         elif choice == "11":
-            run_buckets(shared_data)
+            run_module("Bucket Audit", run_buckets, shared_data)
         elif choice == "12":
-            console.print(f"[cyan]Starting module {choice}...[/cyan]")
-        try:
-            # Module runs below will be nested in this block
-            run_ics(shared_data)
-        except Exception as e:
-            console.print(f"[red]Error running module {choice}: {e}[/red]")
-        else:
-            console.print(f"[green]Module {choice} completed and data saved to shared_data.[/green]\n")
+            run_module("ICS Exposure Detection", run_ics, shared_data)
         elif choice == "13":
-            run_screens(shared_data)
+            run_module("Screenshot Capture", run_screens, shared_data)
         elif choice == "14":
-            console.print(f"[cyan]Starting module {choice}...[/cyan]")
-        try:
-            # Module runs below will be nested in this block
-            run_subdomains(shared_data)
-            run_cert(shared_data)
-            run_grid_harvest(shared_data)
-            run_github(shared_data)
-            run_shodan(shared_data)
-            run_cloud(shared_data)
-            run_wayback(shared_data)
-            run_errors(shared_data)
-            run_paths(shared_data)
-            run_supply(shared_data)
-            run_buckets(shared_data)
-            run_ics(shared_data)
-            run_screens(shared_data)
-        except Exception as e:
-            console.print(f"[red]Error running module {choice}: {e}[/red]")
-        else:
-            console.print(f"[green]Module {choice} completed and data saved to shared_data.[/green]\n")
+            for name, func in [
+                ("Subdomain Enumeration", run_subdomains), ("Certificate Analysis", run_cert),
+                ("Grid IP Harvester", run_grid_harvest), ("GitHub Search", run_github),
+                ("Shodan Scan", run_shodan), ("Cloud Detection", run_cloud),
+                ("Wayback JS", run_wayback), ("Error Page Extraction", run_errors),
+                ("Path Fuzzing", run_paths), ("Supply Chain Analysis", run_supply),
+                ("Bucket Audit", run_buckets), ("ICS Exposure Detection", run_ics),
+                ("Screenshot Capture", run_screens)
+            ]:
+                run_module(name, func, shared_data)
         elif choice == "15":
             generate_reports(shared_data)
         elif choice == "16":
-            console.print(f"[cyan]Starting module {choice}...[/cyan]")
-        try:
-            # Module runs below will be nested in this block
             configure_api_keys()
-        except Exception as e:
-            console.print(f"[red]Error running module {choice}: {e}[/red]")
-        else:
-            console.print(f"[green]Module {choice} completed and data saved to shared_data.[/green]\n")
-        
+        elif choice == "17":
+            for key in ["root_domain", "company_name", "organization_name", "origin_registrant", "prefix_registrant"]:
+                shared_data[key] = Prompt.ask(f"{key.replace('_', ' ').title()} (optional)", default=shared_data.get(key, ""))
         elif choice == "18":
             from pathlib import Path
             reports = sorted(Path("output").glob("*.html"))
             if not reports:
                 console.print("[red]No reports found in output/[/red]")
             else:
-                console.print("[cyan]Available reports:[/cyan]")
                 for i, rpt in enumerate(reports, 1):
                     console.print(f"{i}. {rpt.name}")
                 idx = Prompt.ask("Select report to preview (or 0 to cancel)", default="0")
                 if idx.isdigit() and 1 <= int(idx) <= len(reports):
                     selected = reports[int(idx)-1]
                     console.print(f"[green]Selected:[/green] {selected.resolve()}")
-
         elif choice == "0":
             console.print("\n[bold red]Exiting Deep Recon.[/bold red]")
             break
@@ -276,3 +200,16 @@ def recon_menu(shared_data):
             console.print("[red]Invalid choice.[/red]")
 
 def main():
+    print_banner()
+    console.print("[bold cyan]Welcome to Deep_Recon[/bold cyan]")
+    shared_data = {}
+    if Prompt.ask("Configure API keys?", choices=["yes", "no", "keep"], default="yes") == "yes":
+        configure_api_keys()
+    shared_data["root_domain"] = Prompt.ask("Enter root domain")
+    for key in ["company_name", "organization_name", "origin_registrant", "prefix_registrant"]:
+        shared_data[key] = Prompt.ask(f"{key.replace('_', ' ').title()} (optional)", default="")
+    shared_data["report_filename"] = Prompt.ask("Custom report filename (optional)", default="deep_recon_report")
+    recon_menu(shared_data)
+
+if __name__ == "__main__":
+    main()
