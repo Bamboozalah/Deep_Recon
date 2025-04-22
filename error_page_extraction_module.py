@@ -1,7 +1,9 @@
-
 import requests
 import re
 import logging
+from rich.prompt import Prompt
+from rich.console import Console
+import time
 
 ERROR_PATTERNS = [
     r"(?i)(?<=<!--).*?error.*?(?=-->)",
@@ -20,26 +22,21 @@ def extract_errors(html):
     return list(set(found))
 
 def run(shared_data):
-
-    from rich.prompt import Prompt
-    from rich.console import Console
-    import time
-
     console = Console()
     console.print("\n[bold cyan]Choose Error Page Extraction Module.Py Mode:[/bold cyan]")
     fast_mode = Prompt.ask("Run in fast mode? (limits to 150 items)", choices=["y", "n"], default="y") == "y"
     verbose_mode = not fast_mode
+
     subdomains = shared_data.get("subdomains") or shared_data.get("cert_domains") or []
     if not subdomains:
         logging.warning("No subdomains available. Consider running Subdomain or Cert modules first.")
         return
 
-    logging.info("Running Error Page Extraction Module")
-    subdomains = shared_data.get("subdomains", [])
-    if not subdomains:
-        logging.warning("No subdomains to scan for error pages.")
-        return {}
+    if fast_mode:
+        console.print("[yellow]Fast mode selected. Scanning only first 150 domains.[/yellow]")
+        subdomains = subdomains[:150]
 
+    logging.info("Running Error Page Extraction Module")
     output = {}
 
     for domain in subdomains:
@@ -51,8 +48,12 @@ def run(shared_data):
                 if errors:
                     output[domain] = errors
                     logging.info(f"{domain} returned {len(errors)} error indicators")
-        except Exception as e:
-            logging.debug(f"Error fetching {domain}: {e}")
+        except requests.exceptions.SSLError:
+            logging.warning(f"SSL error for {domain}, skipping.")
+        except requests.exceptions.Timeout:
+            logging.warning(f"Timeout on {domain}, skipping.")
+        except requests.exceptions.RequestException as e:
+            logging.debug(f"Request error fetching {domain}: {e}")
 
     shared_data["error_pages"] = output
     return output
