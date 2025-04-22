@@ -1,13 +1,10 @@
 from utils import get_api_key
-def get_api_key(key):
-
-
+    return os.getenv(key)
 import shodan
 import socket
 import logging
 import os
-from grid_ip_harvester_module import fetch_grid_related_ips
-
+from grid_ip_harvester import fetch_grid_related_ips
 ICS_PORTS = {
     502: "Modbus",
     20000: "DNP3",
@@ -18,7 +15,6 @@ ICS_PORTS = {
     20547: "ProConOS",
     18245: "GE SRTP"
 }
-
 MITRE_MAP = {
     "Modbus": "T0860",  # Default credentials/modbus comms
     "DNP3": "T0861",
@@ -33,7 +29,6 @@ MITRE_MAP = {
     "Allen-Bradley": "T0883",
     "Mitsubishi": "T0884"
 }
-
 def assign_risk_score(port, vulns):
     score = 0
     if port in ICS_PORTS:
@@ -41,30 +36,27 @@ def assign_risk_score(port, vulns):
     if vulns:
         score += len(vulns)
     return min(score, 10)
-
 def run(shared_data):
     logging.info("Running ICS Exposure Module with risk scoring")
-
+    api_key = get_api_key("SHODAN_API_KEY")
+    api_key = get_api_key("SHODAN_API_KEY")
     if not api_key:
         return {}
-
+        logging.error("SHODAN_API_KEY not set in environment variables.")
+        return {}
     subdomains = shared_data.get("subdomains", [])
     search_ips = []
-
     for host in subdomains:
         try:
             ip = socket.gethostbyname(host)
             search_ips.append((host, ip))
         except Exception as e:
             logging.warning(f"Failed to resolve {host}: {e}")
-
     suspect_ips = fetch_grid_related_ips(keywords=["port:502", "port:102", "modbus", "dnp3", "Electric Cooperative"], limit=100)
     for ip in suspect_ips:
         search_ips.append((ip, ip))
-
     api = shodan.Shodan(api_key)
     exposure_results = {}
-
     for hostname, ip in search_ips:
         try:
             response = api.host(ip)
@@ -74,12 +66,10 @@ def run(shared_data):
                 if port in ICS_PORTS or any(p.lower() in product.lower() for p in ICS_PORTS.values()):
                     vulns = list(item.get("vulns", {}).keys()) if item.get("vulns") else []
                     risk = assign_risk_score(port, vulns)
-
                     mitre = []
                     for key, tactic in MITRE_MAP.items():
                         if key.lower() in product.lower():
                             mitre.append(tactic)
-
                     exposure = {
                         "port": port,
                         "product": product,
@@ -90,16 +80,13 @@ def run(shared_data):
                         "risk_score": risk,
                         "mitre_attack": mitre
                     }
-
                     if hostname not in exposure_results:
                         exposure_results[hostname] = []
                     exposure_results[hostname].append(exposure)
-
                     logging.info(f"ICS risk exposure for {hostname} - risk {risk} - port {port}")
         except shodan.APIError as e:
             logging.warning(f"Shodan API error for {ip}: {e}")
         except Exception as e:
             logging.error(f"Error checking ICS exposure for {ip}: {e}")
-
     shared_data["ics_exposure"] = exposure_results
     return exposure_results
