@@ -6,7 +6,7 @@ import shodan
 import socket
 import logging
 import os
-from grid_ip_harvester import fetch_grid_related_ips
+from grid_ip_harvester_module import fetch_grid_related_ips
 
 ICS_PORTS = {
     502: "Modbus",
