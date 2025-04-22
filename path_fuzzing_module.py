@@ -11,7 +11,7 @@ def fuzz_paths(domain):
     results = []
     base_url = f"https://{domain}"
 
-    for i, path in enumerate(COMMON_PATHS:):        if fast_mode and i >= 200:
+    for i, path in enumerate(COMMON_PATHS):):        if fast_mode and i >= 200:
             break        if verbose_mode:
             time.sleep(0.25)        url = base_url + path
         try:
