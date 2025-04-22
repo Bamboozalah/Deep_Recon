@@ -1,13 +1,12 @@
 from utils import get_api_key
 def get_api_key(key):
-    return os.getenv(key)
 
 
 import shodan
 import socket
 import logging
 import os
-from grid_ip_harvester_module import fetch_grid_related_ips
+from grid_ip_harvester import fetch_grid_related_ips
 
 ICS_PORTS = {
     502: "Modbus",
@@ -46,9 +45,7 @@ def assign_risk_score(port, vulns):
 def run(shared_data):
     logging.info("Running ICS Exposure Module with risk scoring")
 
-    api_key = get_api_key("SHODAN_API_KEY")
     if not api_key:
-        logging.error("SHODAN_API_KEY not set in environment variables.")
         return {}
 
     subdomains = shared_data.get("subdomains", [])
