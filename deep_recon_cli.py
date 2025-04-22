@@ -114,11 +114,13 @@ def configure_api_keys():
 def recon_menu(shared_data):
 
     console.print("\n[bold cyan]Global Scan Mode:[/bold cyan]")
-    fast_mode = Prompt.ask("Run all modules in fast mode?", choices=["y", "n"], default="y") == "y"
+    fast_mode = Prompt.ask("Run all modules in fast mode by default?", choices=["y", "n"], default="y") == "y"
+    if shared_data["fast_mode"]:
+        console.print("[green]Fast mode selected: Valuable findings may be incomplete or omitted due to limited depth, throttling, and iteration caps.[/green]")
     shared_data["fast_mode"] = fast_mode
     shared_data["verbose_mode"] = not fast_mode
     if shared_data["verbose_mode"]:
-        console.print("[yellow]⚠️  Verbose mode selected: This scan may take significantly longer.[/yellow]")
+        console.print("[yellow]Verbose mode selected: This scan may take significantly longer.[/yellow]")
     while True:
         console.print("\n[bold magenta]Choose a module to run:[/bold magenta]")
         console.print("1. Subdomain Enumeration")
